@@ -17,6 +17,8 @@ new class extends Component {
                 <livewire:chat.message />
 
                 <flux:separator variant="subtle" text="{{ __('Start conversation') }}" />
+
+                <flux:button variant="subtle" size="sm" class="w-full">{{ __('Load more') }}</flux:button>
             </div>
 
             <flux:input placeholder="{{ __('Say something...') }}" />
