@@ -9,7 +9,7 @@ new class extends Component {
 <x-layouts.app :title="__('Chat')">
     @volt
         <div class="relative flex flex-col h-full">
-            <header class="flex gap-2 items-center sticky lg:top-0 pt-6 pb-3 -mt-6 lg:-mt-8 z-10 dark:bg-zinc-800">
+            <header class="flex gap-2 items-center sticky top-0 pb-3 -mt-20 pt-15 lg:pt-6 lg:-mt-8 z-10 dark:bg-zinc-800">
                 <flux:avatar circle name="username" />
                 <flux:heading size="xl"><flux:link href="#" variant="ghost">username</flux:link></flux:heading>
             </header>
