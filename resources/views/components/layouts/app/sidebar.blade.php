@@ -15,6 +15,22 @@
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 </flux:navlist.group>
+
+                <flux:navlist.group expandable :heading="__('Chat')">
+                    <flux:input size="sm" type="search" placeholder="{{ __('Search') }}" class="mb-2" />
+
+                    <a href="/chat/1" wire:navigate>
+                        <flux:profile :name="'username'" :chevron="false" class="w-full" />
+                    </a>
+                    
+                    <a href="/chat/1" wire:navigate>
+                        <flux:profile :name="'username'" :chevron="false" class="w-full" />
+                    </a>
+
+                    <a href="/chat/1" wire:navigate>
+                        <flux:profile :name="'username'" :chevron="false" class="w-full" />
+                    </a>
+                </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />
