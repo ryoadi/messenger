@@ -16,4 +16,6 @@ new class extends Component {
             <flux:profile :name="'username'" :chevron="false" class="w-full" />
         </a>
     @endfor
+
+    <flux:button variant="subtle" size="sm" class="w-full mt-2">{{ __('Load more') }}</flux:button>
 </div>
