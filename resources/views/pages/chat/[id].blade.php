@@ -29,9 +29,10 @@ new class extends Component {
             </main>
 
             <footer class="sticky bottom-0 pb-6 pt-2 -mb-6 lg:-mb-8 dark:bg-zinc-800">
-                
-                <flux:input.group>
-                    <flux:button icon="paper-clip" />
+                <flux:input.group x-data>
+                    <flux:button icon="paper-clip" @click="$refs.file.click()" />
+                    <input type="file" x-ref="file" class="hidden" />
+
                     <flux:button icon="face-smile" />
                     <flux:input placeholder="{{ __('Say something...') }}" />
                 </flux:input.group>
