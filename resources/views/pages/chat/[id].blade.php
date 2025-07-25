@@ -28,15 +28,16 @@ new class extends Component {
                 <flux:button variant="subtle" size="sm" class="w-full">{{ __('Load more') }}</flux:button>
             </main>
 
-            <footer class="sticky bottom-0 pb-6 pt-2 -mb-6 lg:-mb-8 dark:bg-zinc-800">
-                <flux:input.group x-data>
-                    <flux:button icon="paper-clip" @click="$refs.file.click()" />
-                    <input type="file" x-ref="file" class="hidden" />
+            <form class="sticky bottom-0 pb-6 pt-2 -mb-6 lg:-mb-8 dark:bg-zinc-800" x-data>
+                <input type="file" x-ref="file" class="hidden" />
 
-                    <flux:button icon="face-smile" />
+                <flux:input.group>
                     <flux:input placeholder="{{ __('Say something...') }}" />
+
+                    <flux:button icon="plus" @click="$refs.file.click()" />
+                    <flux:button type="submit" icon="paper-airplane" />
                 </flux:input.group>
-            </footer>
+            </form>
         </div>
     @endvolt
 </x-layouts.app>
