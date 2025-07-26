@@ -50,7 +50,9 @@ new class extends Component {
 
                 <flux:separator variant="subtle" text="{{ __('Start conversation') }}" />
 
-                <flux:button variant="subtle" size="sm" class="w-full">{{ __('Load more') }}</flux:button>
+                <div>
+                    <flux:button variant="subtle" size="xs" class="w-full">{{ __('Load more') }}</flux:button>
+                </div>
             </main>
         </div>
     @endvolt
