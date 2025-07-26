@@ -25,9 +25,11 @@ new class extends Component {
                 </flux:modal>
             </header>
 
-            <main class="flex flex-col-reverse gap-3 grow overflow-y-auto -mr-8 pr-8">
+            <main class="flex flex-col-reverse gap-3 grow overflow-y-auto -mr-8 pr-8" x-data x-ref="container">
                 <!-- chatbox -->
-                <form class="pb-3 pt-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data>
+                <form class="pb-3 pt-2 space-y-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data>
+                    <flux:button variant="ghost" size="xs" icon="chevron-down" class="w-full" @click="$refs.container.scrollTo(0, $refs.container.scrollHeight)" />
+
                     <input type="file" x-ref="file" class="hidden" />
 
                     <flux:input.group>
