@@ -8,8 +8,10 @@ new class extends Component {
 
 <div class="flex flex-col gap-2 h-full overflow-y-auto pr-2">
     <div class="py-1 dark:bg-zinc-900 z-10 space-y-2 pl-1">
-        <flux:button icon="plus" size="sm" class="w-full">{{ __('New') }}</flux:button>
-        <flux:input inset size="sm" type="search" placeholder="{{ __('Search') }}" />
+        <flux:button.group>
+            <flux:button icon="plus" size="sm" />    
+            <flux:input size="sm" type="search" placeholder="{{ __('Search') }}" />    
+        </flux:button.group>
     </div>
 
     <div class="overflow-y-auto">
