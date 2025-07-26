@@ -8,7 +8,7 @@ new class extends Component {
 
 <x-layouts.app :title="__('Chat')">
     @volt
-        <div class="flex flex-col gap-3 h-dvh -mt-20 -mb-6 lg:-my-8">
+        <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8">
             <header class="flex gap-2 mt-15 lg:mt-3 items-center">
                 <flux:modal.trigger name="profile-info">
                     <flux:avatar circle name="username" />
@@ -25,7 +25,19 @@ new class extends Component {
                 </flux:modal>
             </header>
 
-            <main class="flex flex-col-reverse gap-3 grow overflow-y-auto -mr-4 pr-4">
+            <main class="flex flex-col-reverse gap-3 grow overflow-y-auto -mr-8 pr-8">
+                <!-- chatbox -->
+                <form class="pb-3 pt-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data>
+                    <input type="file" x-ref="file" class="hidden" />
+
+                    <flux:input.group>
+                        <flux:input placeholder="{{ __('Say something...') }}" />
+
+                        <flux:button icon="plus" @click="$refs.file.click()" />
+                        <flux:button type="submit" icon="paper-airplane" />
+                    </flux:input.group>
+                </form>
+
                 <!-- own -->
                 <livewire:chat.message :own="true" />
 
@@ -38,17 +50,6 @@ new class extends Component {
 
                 <flux:button variant="subtle" size="sm" class="w-full">{{ __('Load more') }}</flux:button>
             </main>
-
-            <form class="pb-3" x-data>
-                <input type="file" x-ref="file" class="hidden" />
-
-                <flux:input.group>
-                    <flux:input placeholder="{{ __('Say something...') }}" />
-
-                    <flux:button icon="plus" @click="$refs.file.click()" />
-                    <flux:button type="submit" icon="paper-airplane" />
-                </flux:input.group>
-            </form>
         </div>
     @endvolt
 </x-layouts.app>
