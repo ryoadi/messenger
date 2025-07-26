@@ -7,13 +7,16 @@ new class extends Component {
 }; ?>
 
 <div class="flex flex-col gap-2 h-full overflow-y-auto pr-2">
-    <div class="py-1 dark:bg-zinc-900 z-10 space-y-2 pl-1">
-        <flux:button.group>
+    <div class="py-1 space-y-2 pl-1">
             <flux:modal.trigger name="room-create">
-                <flux:button icon="plus" size="sm" />    
+            <flux:button size="sm" class="w-full mb-2">{{ __('New') }}</flux:button>
             </flux:modal.trigger>
             <flux:input size="sm" type="search" placeholder="{{ __('Search') }}" />    
-        </flux:button.group>
+        <div class="flex gap-2 justify-center">
+            <flux:button size="xs" variant="primary">{{ __('All') }}</flux:button>
+            <flux:button size="xs">{{ __('Direct') }}</flux:button>
+            <flux:button size="xs">{{ __('Group') }}</flux:button>
+        </div>
     </div>
 
     <flux:modal name="room-create" variant="flyout" position="left" class="[&[data-open]]:flex flex-col gap-2 max-w-1/4">
