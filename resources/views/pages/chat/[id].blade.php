@@ -8,8 +8,8 @@ new class extends Component {
 
 <x-layouts.app :title="__('Chat')">
     @volt
-        <div class="relative flex flex-col h-full">
-            <header class="flex gap-2 items-center sticky top-0 pb-3 -mt-20 pt-15 lg:pt-6 lg:-mt-8 z-10 dark:bg-zinc-800">
+        <div class="flex flex-col gap-3 h-dvh -mt-20 -mb-6 lg:-my-8">
+            <header class="flex gap-2 mt-15 lg:mt-3 items-center">
                 <flux:modal.trigger name="profile-info">
                     <flux:avatar circle name="username" />
                     <flux:heading size="xl"><flux:link variant="ghost">username</flux:link></flux:heading>
@@ -25,7 +25,7 @@ new class extends Component {
                 </flux:modal>
             </header>
 
-            <main class="pb-2 grow flex flex-col-reverse gap-3 overflow-y-auto">
+            <main class="flex flex-col-reverse gap-3 grow overflow-y-auto -mr-4 pr-4">
                 <!-- own -->
                 <livewire:chat.message :own="true" />
 
@@ -39,7 +39,7 @@ new class extends Component {
                 <flux:button variant="subtle" size="sm" class="w-full">{{ __('Load more') }}</flux:button>
             </main>
 
-            <form class="sticky bottom-0 pb-6 pt-2 -mb-6 lg:-mb-8 dark:bg-zinc-800" x-data>
+            <form class="pb-3" x-data>
                 <input type="file" x-ref="file" class="hidden" />
 
                 <flux:input.group>
