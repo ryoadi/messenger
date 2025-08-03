@@ -10,7 +10,25 @@ new class extends Component {
 <div class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $own ? 'flex-row-reverse' : '' }}">
     <div class="px-2 py-2 rounded-md {{ $own ? 'dark:bg-zinc-600' : 'dark:bg-zinc-700'}}">
         <flux:text size="sm" variant="subtle" class="text-end"><time>10:00</time></flux:text>
-        <flux:text>the messages</flux:text>
+        <flux:text class="space-y-2">
+
+            @if($own)
+                {{-- image --}}
+                <img src="https://placehold.co/600x400" alt="image" class="rounded-md">
+
+                {{-- reply --}}
+                <blockquote class="border-l-4 pl-2">
+                    <flux:link variant="subtle">@mention</flux:link>
+                    <p>reply message</p>
+                </blockquote>
+
+                {{-- mention --}}
+                <flux:link variant="subtle">@mention</flux:link>
+            @endif
+
+            {{-- normal message --}}
+            <p>the messages</p>
+        </flux:text>
     </div>
 
     <flux:dropdown class="hidden">
@@ -38,7 +56,7 @@ new class extends Component {
                 <flux:modal.close>
                     <flux:button>{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
-                
+
                 <flux:button variant="danger">{{ __('Delete') }}</flux:button>
             </div>
         </flux:modal>
