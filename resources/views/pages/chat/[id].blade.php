@@ -31,6 +31,14 @@ new class extends Component {
                 <form class="pb-3 pt-2 space-y-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data>
                     <flux:button variant="ghost" size="xs" icon="chevron-down" class="w-full" @click="$refs.container.scrollTo(0, $refs.container.scrollHeight)" />
 
+                    <flux:avatar.group>
+                        <flux:avatar size="xs" circle name="username" tooltip="username"/>
+                        <flux:avatar size="xs" circle name="username" tooltip="username"/>
+                        <flux:avatar size="xs" circle name="username" tooltip="username"/>
+                        <flux:avatar size="xs" circle name="+3"/>
+                        <flux:text variant="subtle" class="pl-4">typing...</flux:avatar.group>
+                    </flux:avatar.group>
+
                     <input type="file" x-ref="file" class="hidden" />
 
                     <flux:input.group>
