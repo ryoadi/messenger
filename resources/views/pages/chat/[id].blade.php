@@ -11,7 +11,8 @@ new class extends Component {
         <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8">
             <header class="flex gap-2 mt-15 lg:mt-3 items-center">
                 <flux:modal.trigger name="profile-info">
-                    <flux:avatar circle name="username" />
+                    <flux:avatar circle badge badge:circle badge:color="green" name="username" href="#" />
+
                     <flux:heading size="xl"><flux:link variant="ghost">username</flux:link></flux:heading>
                 </flux:modal.trigger>
 
