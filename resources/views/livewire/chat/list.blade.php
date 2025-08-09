@@ -38,9 +38,12 @@ new class extends Component {
                 <flux:input size="sm" type="search" placeholder="{{ __('Search') }}" />
             </div>
 
-            <div class="overflow-y-auto">
+            <div class="overflow-y-auto space-y-1">
                 @for ($index = 0; $index < 20; $index++)
-                    <flux:profile :name="'username'" :chevron="false" class="w-full" />
+                    <flux:button size="sm" variant="ghost" class="w-full gap-2 justify-start">
+                        <flux:avatar badge badge:color="green" size="xs" name="username" href="#" />
+                        username
+                    </flux:button>
                 @endfor
 
                 <flux:button variant="subtle" size="sm" class="w-full mt-2">{{ __('Load more') }}</flux:button>
