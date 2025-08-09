@@ -11,7 +11,7 @@ new class extends Component {
             <flux:modal.trigger name="room-create">
             <flux:button size="sm" class="w-full mb-2">{{ __('New') }}</flux:button>
             </flux:modal.trigger>
-            <flux:input size="sm" type="search" placeholder="{{ __('Search') }}" />    
+            <flux:input size="sm" type="search" placeholder="{{ __('Search') }}" />
         <div class="flex gap-2 justify-center">
             <flux:button size="xs" variant="primary">{{ __('All') }}</flux:button>
             <flux:button size="xs">{{ __('Direct') }}</flux:button>
@@ -49,12 +49,16 @@ new class extends Component {
     </flux:modal>
 
     <div class="overflow-y-auto">
-        @for ($index = 0; $index < 10; $index++)
-        <a href="/chat/1" wire:navigate>
-            <flux:profile :name="'username'" :chevron="false" class="w-full" />
-        </a>
-        @endfor
+        <flux:navlist >
+            @for ($index = 0; $index < 10; $index++)
+                <flux:navlist.item badge="+1" class="[&>[data-content]]:flex [&>[data-content]]:flex-column [&>[data-content]]:items-center [&>[data-content]]:gap-2">
+                    <flux:avatar badge badge:color="green" size="xs" name="username" href="#" />
+                    username
+                </flux:navlist.item>
+            @endfor
 
-        <flux:button variant="subtle" size="sm" class="w-full mt-2">{{ __('Load more') }}</flux:button>
+            <flux:button variant="subtle" size="sm" class="w-full mt-2">{{ __('Load more') }}</flux:button>
+        </flux:navlist>
     </div>
+
 </div>
