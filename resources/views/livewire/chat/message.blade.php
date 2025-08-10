@@ -4,10 +4,15 @@ use Livewire\Volt\Component;
 
 new class extends Component {
     public bool $own = false;
+    public bool $group = false;
     //
 }; ?>
 
 <div class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $own ? 'flex-row-reverse' : '' }}">
+    @if($group)
+        <flux:avatar circle badge badge:circle badge:color="green" name="username"  size="sm" />
+    @endif
+
     <div class="px-2 py-2 rounded-md {{ $own ? 'dark:bg-zinc-600' : 'dark:bg-zinc-700'}}">
         <flux:text size="sm" variant="subtle" class="text-end"><time>10:00</time></flux:text>
         <flux:text class="space-y-2">

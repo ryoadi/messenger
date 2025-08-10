@@ -51,6 +51,7 @@ new class extends Component {
 
                 <!-- own -->
                 <livewire:chat.message :own="true" />
+                <livewire:chat.message :own="true" :group="true" />
 
                 <!-- theirs -->
                  @for ($index = 0; $index < 20; $index++)
