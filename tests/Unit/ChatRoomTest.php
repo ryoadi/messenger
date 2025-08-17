@@ -18,9 +18,8 @@ it('direct chat room only allows 2 unique users', function () {
     $room->users()->attach($users[0], ['role' => \App\ChatRoomUserRole::Owner]);
     $room->users()->attach($users[1], ['role' => \App\ChatRoomUserRole::Member]);
     $room->users()->attach($users[2], ['role' => \App\ChatRoomUserRole::Member]);
-    // Only unique (chat_room_id, user_id) pairs are enforced
-    $uniquePairs = $room->users()->distinct()->count('user_id');
-    expect($uniquePairs)->toBe(3);
+    expect(fn() => $room->save())
+        ->toThrow(\Illuminate\Validation\ValidationException::class, 'Direct chat room can only have 2 users.');
 });
 
 it('group chat room allows more than 2 users', function () {
