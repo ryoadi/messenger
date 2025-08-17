@@ -33,6 +33,13 @@ class ChatRoom extends Model
                     }
                 }
             }
+            if ($chatRoom->type === ChatRoomType::Group) {
+                if (empty($chatRoom->name)) {
+                    throw ValidationException::withMessages([
+                        'name' => 'Group chat room title is required.'
+                    ]);
+                }
+            }
         });
     }
 

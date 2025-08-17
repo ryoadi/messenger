@@ -31,6 +31,12 @@ it('group chat room allows more than 2 users', function () {
     expect($room->users()->count())->toBe(5);
 });
 
+it('group chat room requires a title', function () {
+    $room = ChatRoom::factory()->group()->make(['name' => null]);
+    expect(fn() => $room->save())
+        ->toThrow(\Illuminate\Validation\ValidationException::class, 'Group chat room title is required.');
+});
+
 it('chat room users relationship returns correct roles', function () {
     $room = ChatRoom::factory()->group()->create();
     $owner = User::factory()->create();
