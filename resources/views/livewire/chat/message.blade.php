@@ -8,9 +8,31 @@ new class extends Component {
     public bool $group = false;
     public \App\Models\ChatMessage $message;
 
+    // Editing state
+    public bool $editing = false;
+    public string $contentDraft = '';
+
     public function mount(): void
     {
         $this->isOwned = Gate::allows('manage', $this->message);
+    }
+
+    public function saveEdit(string $content): void
+    {
+        abort_unless($this->isOwned, 403);
+
+        $validated = validator(
+            ['content' => $content],
+            ['content' => ['required', 'string']]
+        )->validate();
+
+        $newContent = trim((string) $validated['content']);
+
+        // Only update if changed
+        if ($newContent !== (string) $this->message->content) {
+            $this->message->update(['content' => $newContent]);
+            $this->dispatch('message-updated', id: $this->message->getKey());
+        }
     }
 
     public function delete(): void
@@ -26,7 +48,9 @@ new class extends Component {
     }
 }; ?>
 
-<div class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $isOwned ? 'flex-row-reverse' : '' }}">
+<div x-data="{ editing: false, initial: @js($message->content), draft: @js($message->content), width: null }" x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null })"
+     class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $isOwned ? 'flex-row-reverse' : '' }}"
+>
     @if($group)
         <flux:avatar circle badge badge:circle badge:color="green" :name="$message->user?->name ?? 'User'" size="sm" />
     @endif
@@ -50,7 +74,16 @@ new class extends Component {
 {{--                <flux:link variant="subtle">@mention</flux:link>--}}
 {{--            @endif--}}
 
-            <p class="whitespace-pre-line">{{ $message->content }}</p>
+            @if ($isOwned)
+                <div x-show="editing" x-cloak class="space-y-2" x-bind:style="width ? `width: ${width}` : ''">
+                    <flux:textarea x-model="draft" rows="3" class="w-full" />
+                    <div class="flex gap-2 justify-end">
+                        <flux:button size="sm" variant="subtle" x-on:click="editing=false; draft=initial">{{ __('Cancel') }}</flux:button>
+                        <flux:button size="sm" variant="primary" x-on:click="$wire.saveEdit(draft).then(() => { editing=false })">{{ __('Save') }}</flux:button>
+                    </div>
+                </div>
+            @endif
+            <p x-show="!editing" x-ref="content" class="whitespace-pre-line">{{ $message->content }}</p>
         </flux:text>
     </div>
 
@@ -59,7 +92,7 @@ new class extends Component {
 
         <flux:menu>
             @if ($isOwned)
-                <flux:menu.item icon="pencil">{{ __('Edit') }}</flux:menu.item>
+                <flux:menu.item icon="pencil" x-on:click="editing=true; draft=initial">{{ __('Edit') }}</flux:menu.item>
                 <flux:modal.trigger name="delete-message">
                     <flux:menu.item variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
                 </flux:modal.trigger>
