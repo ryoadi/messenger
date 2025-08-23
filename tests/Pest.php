@@ -11,9 +11,9 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature', 'Unit');
+pest()->extend(Tests\TestCase::class);
+pest()->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->in('Feature', 'Model');
 
 /*
 |--------------------------------------------------------------------------
