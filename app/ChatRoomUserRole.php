@@ -2,8 +2,7 @@
 
 namespace App;
 
-enum ChatRoomUserRole
-    : string
+enum ChatRoomUserRole: string
 {
     case Owner = 'owner';
     case Member = 'member';

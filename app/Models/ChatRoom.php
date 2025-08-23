@@ -1,14 +1,11 @@
 <?php
 
-
 namespace App\Models;
 
+use App\ChatRoomType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
-use App\ChatRoomType;
-use App\Models\User;
-use App\Models\ChatMessage;
 
 class ChatRoom extends Model
 {
@@ -19,7 +16,7 @@ class ChatRoom extends Model
         'type' => ChatRoomType::class,
     ];
 
-        protected static function booted()
+    protected static function booted()
     {
         static::saving(function (self $chatRoom) {
             if ($chatRoom->type === ChatRoomType::Direct) {
@@ -28,7 +25,7 @@ class ChatRoom extends Model
                     $userCount = $chatRoom->users()->distinct()->count();
                     if ($userCount > 2) {
                         throw ValidationException::withMessages([
-                            'users' => 'Direct chat room can only have 2 users.'
+                            'users' => 'Direct chat room can only have 2 users.',
                         ]);
                     }
                 }
@@ -36,7 +33,7 @@ class ChatRoom extends Model
             if ($chatRoom->type === ChatRoomType::Group) {
                 if (empty($chatRoom->name)) {
                     throw ValidationException::withMessages([
-                        'name' => 'Group chat room title is required.'
+                        'name' => 'Group chat room title is required.',
                     ]);
                 }
             }
