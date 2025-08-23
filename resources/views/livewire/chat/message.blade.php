@@ -11,29 +11,29 @@ new class extends Component {
 
 <div class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $own ? 'flex-row-reverse' : '' }}">
     @if($group)
-        <flux:avatar circle badge badge:circle badge:color="green" name="username"  size="sm" />
+        <flux:avatar circle badge badge:circle badge:color="green" :name="$message->user?->name ?? 'User'" size="sm" />
     @endif
 
     <div class="px-2 py-2 rounded-md {{ $own ? 'dark:bg-zinc-600' : 'dark:bg-zinc-700'}}">
-        <flux:text size="sm" variant="subtle" class="text-end"><time>10:00</time></flux:text>
+        <flux:text size="sm" variant="subtle" class="text-end">
+            <time datetime="{{ $message->created_at->toAtomString() }}">{{ $message->created_at?->format('H:i') }}</time>
+        </flux:text>
         <flux:text class="space-y-2">
+{{--            @if($own)--}}
+{{--                --}}{{-- image --}}
+{{--                <img src="https://placehold.co/600x400" alt="image" class="rounded-md">--}}
 
-            @if($own)
-                {{-- image --}}
-                <img src="https://placehold.co/600x400" alt="image" class="rounded-md">
+{{--                --}}{{-- reply --}}
+{{--                <blockquote class="border-l-4 pl-2">--}}
+{{--                    <flux:link variant="subtle">@mention</flux:link>--}}
+{{--                    <p>reply message</p>--}}
+{{--                </blockquote>--}}
 
-                {{-- reply --}}
-                <blockquote class="border-l-4 pl-2">
-                    <flux:link variant="subtle">@mention</flux:link>
-                    <p>reply message</p>
-                </blockquote>
+{{--                --}}{{-- mention --}}
+{{--                <flux:link variant="subtle">@mention</flux:link>--}}
+{{--            @endif--}}
 
-                {{-- mention --}}
-                <flux:link variant="subtle">@mention</flux:link>
-            @endif
-
-            {{-- normal message --}}
-            <p>the messages</p>
+            <p class="whitespace-pre-line">{{ $message->content }}</p>
         </flux:text>
     </div>
 
