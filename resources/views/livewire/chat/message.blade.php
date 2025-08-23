@@ -5,6 +5,7 @@ use Livewire\Volt\Component;
 new class extends Component {
     public bool $own = false;
     public bool $group = false;
+    public \App\Models\ChatMessage $message;
     //
 }; ?>
 
