@@ -4,9 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
-use App\Models\User;
-use App\Models\ChatRoom;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatMessage extends Model
 {
@@ -14,17 +12,24 @@ class ChatMessage extends Model
     use HasFactory;
 
     protected $fillable = [
+        'chat_room_id',
         'user_id',
         'content',
     ];
 
-    public function room()
+    /**
+     * Get the chat room this message belongs to.
+     */
+    public function chatRoom(): BelongsTo
     {
-        return $this->belongsTo(ChatRoom::class, 'chat_room_id');
+        return $this->belongsTo(ChatRoom::class);
     }
 
-    public function sender()
+    /**
+     * Get the user who sent the message.
+     */
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 }
