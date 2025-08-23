@@ -1,9 +1,12 @@
 <?php
 
+use App\ChatRoomType;
 use App\Models\ChatMessage;
 use App\Models\ChatRoom;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
@@ -19,8 +22,38 @@ new class extends Component {
 
     public function mount(ChatRoom $chatRoom): void
     {
-        $this->room = $chatRoom;
+        // Ensure related users are available for header rendering
+        $this->room     = $chatRoom->loadMissing('users');
         $this->messages = $chatRoom->messages;
+    }
+
+    protected function displayTitle(): string
+    {
+        if ($this->room->type === ChatRoomType::Group) {
+            return (string) ($this->room->name ?? __('Group Chat'));
+        }
+
+        $other = $this->otherParticipant();
+
+        return $other?->name ?? ($this->room->name ?? __('Direct Chat'));
+    }
+
+    protected function avatarName(): string
+    {
+        if ($this->room->type === ChatRoomType::Group) {
+            return (string) ($this->room->name ?? '');
+        }
+
+        return (string) ($this->otherParticipant()?->name ?? '');
+    }
+
+    protected function otherParticipant(): ?User
+    {
+        $currentId = Auth::id();
+
+        return $this->room->users->first(function (User $user) use ($currentId) {
+            return $user->getKey() !== $currentId;
+        });
     }
 
     public function addMessage(): void
@@ -35,14 +68,14 @@ new class extends Component {
             return; // no-op if only whitespace
         }
 
-        $userId = Auth::id();
-        abort_unless($userId !== null, 403);
+        // Authorize via policy: user must belong to the chat room
+        Gate::authorize('addMessage', $this->room);
 
         /** @var ChatMessage $message */
         $message = ChatMessage::query()->create([
             'chat_room_id' => $this->room->getKey(),
-            'user_id' => $userId,
-            'content' => $content,
+            'user_id'      => (int) Auth::id(),
+            'content'      => $content,
         ]);
 
         // Keep in-memory list in sync for instant UI feedback
@@ -62,17 +95,17 @@ new class extends Component {
     <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8">
         <header class="flex gap-2 mt-15 lg:mt-3 items-center">
             <flux:modal.trigger name="profile-info">
-                <flux:avatar circle badge badge:circle badge:color="green" name="username" href="#"/>
+                <flux:avatar circle badge badge:circle badge:color="green" :name="$this->avatarName()" href="#"/>
 
                 <flux:heading size="xl">
-                    <flux:link variant="ghost">username</flux:link>
+                    <flux:link variant="ghost">{{ $this->displayTitle() }}</flux:link>
                 </flux:heading>
             </flux:modal.trigger>
 
             <flux:modal name="profile-info" variant="flyout" position="right">
                 <div class="flex flex-col gap-4 items-center">
-                    <flux:avatar circle name="username" size="xl"/>
-                    <flux:heading size="xl">username</flux:heading>
+                    <flux:avatar circle :name="$this->avatarName()" size="xl"/>
+                    <flux:heading size="xl">{{ $this->displayTitle() }}</flux:heading>
                     <flux:text>Introduction text</flux:text>
                     <flux:text>Last seen: 10 minutes ago</flux:text>
                 </div>
@@ -81,7 +114,8 @@ new class extends Component {
 
         <main class="flex flex-col-reverse gap-3 grow overflow-y-auto -mr-8 pr-8" x-data x-ref="container">
             <!-- chatbox -->
-            <form class="pb-3 pt-2 space-y-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data wire:submit.prevent="addMessage">
+            <form class="pb-3 pt-2 space-y-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data
+                  wire:submit.prevent="addMessage">
                 <flux:button variant="ghost" size="xs" icon="chevron-down" class="w-full"
                              @click="$refs.container.scrollTo(0, $refs.container.scrollHeight)"/>
 
@@ -96,15 +130,15 @@ new class extends Component {
                 <input type="file" x-ref="file" class="hidden"/>
 
                 <flux:input.group>
-                    <flux:input placeholder="{{ __('Say something...') }}" wire:model.live="text" />
+                    <flux:input placeholder="{{ __('Say something...') }}" wire:model.live="text"/>
 
                     <flux:button icon="plus" @click="$refs.file.click()"/>
-                    <flux:button type="submit" icon="paper-airplane" />
+                    <flux:button type="submit" icon="paper-airplane"/>
                 </flux:input.group>
             </form>
 
             @foreach($messages as $message)
-                <livewire:chat.message :message="$message" />
+                <livewire:chat.message :message="$message"/>
             @endforeach
 
             <flux:separator variant="subtle" text="{{ __('Start conversation') }}"/>
