@@ -18,6 +18,9 @@ new class extends Component {
     #[Locked]
     public Collection $messages;
 
+    #[Locked]
+    public string $title = '';
+
     public string $text = '';
 
     public function mount(ChatRoom $chatRoom): void
@@ -25,6 +28,7 @@ new class extends Component {
         // Ensure related users are available for header rendering
         $this->room     = $chatRoom->loadMissing('users');
         $this->messages = $chatRoom->messages;
+        $this->title = $this->displayTitle();
     }
 
     protected function displayTitle(): string
@@ -33,18 +37,12 @@ new class extends Component {
             return (string) ($this->room->name ?? __('Group Chat'));
         }
 
-        $other = $this->otherParticipant();
+        $currentId = Auth::id();
+        $other = $this->room->users->first(function (User $user) use ($currentId) {
+            return $user->getKey() !== $currentId;
+        });
 
         return $other?->name ?? ($this->room->name ?? __('Direct Chat'));
-    }
-
-    protected function avatarName(): string
-    {
-        if ($this->room->type === ChatRoomType::Group) {
-            return (string) ($this->room->name ?? '');
-        }
-
-        return (string) ($this->otherParticipant()?->name ?? '');
     }
 
     protected function otherParticipant(): ?User
@@ -95,7 +93,7 @@ new class extends Component {
     <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8">
         <header class="flex gap-2 mt-15 lg:mt-3 items-center">
             <flux:modal.trigger name="profile-info">
-                <flux:avatar circle badge badge:circle badge:color="green" :name="$this->avatarName()" href="#"/>
+                <flux:avatar circle badge badge:circle badge:color="green" :name="$this->displayTitle()" href="#"/>
 
                 <flux:heading size="xl">
                     <flux:link variant="ghost">{{ $this->displayTitle() }}</flux:link>
@@ -104,7 +102,7 @@ new class extends Component {
 
             <flux:modal name="profile-info" variant="flyout" position="right">
                 <div class="flex flex-col gap-4 items-center">
-                    <flux:avatar circle :name="$this->avatarName()" size="xl"/>
+                    <flux:avatar circle :name="$this->displayTitle()" size="xl"/>
                     <flux:heading size="xl">{{ $this->displayTitle() }}</flux:heading>
                     <flux:text>Introduction text</flux:text>
                     <flux:text>Last seen: 10 minutes ago</flux:text>
