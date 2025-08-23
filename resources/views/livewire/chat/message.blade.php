@@ -1,15 +1,21 @@
 <?php
 
+use App\Models\ChatMessage;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
 new class extends Component {
-    public bool $isOwned = false;
-    public bool $group = false;
-    public \App\Models\ChatMessage $message;
 
-    // Editing state
-    public bool $editing = false;
+    #[Locked]
+    public bool $isOwned = false;
+
+    #[Locked]
+    public bool $group = false;
+
+    #[Locked]
+    public ChatMessage $message;
+
     public string $contentDraft = '';
 
     public function mount(): void
@@ -46,40 +52,47 @@ new class extends Component {
         // Let any parent/listeners know so they can update UI
         $this->dispatch('message-deleted', id: $id);
     }
+
 }; ?>
 
-<div x-data="{ editing: false, initial: @js($message->content), draft: @js($message->content), width: null }" x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null })"
+<div x-data="{ editing: false, initial: @js($message->content), draft: @js($message->content), width: null }"
+     x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null })"
      class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $isOwned ? 'flex-row-reverse' : '' }}"
 >
     @if($group)
-        <flux:avatar circle badge badge:circle badge:color="green" :name="$message->user?->name ?? 'User'" size="sm" />
+        <flux:avatar circle badge badge:circle badge:color="green" :name="$message->user?->name ?? 'User'" size="sm"/>
     @endif
 
     <div class="px-2 py-2 rounded-md {{ $isOwned ? 'dark:bg-zinc-600' : 'dark:bg-zinc-700'}}">
         <flux:text size="sm" variant="subtle" class="text-end">
-            <time datetime="{{ $message->created_at->toAtomString() }}">{{ $message->created_at?->format('H:i') }}</time>
+            <time
+                datetime="{{ $message->created_at->toAtomString() }}">{{ $message->created_at?->format('H:i') }}</time>
         </flux:text>
         <flux:text class="space-y-2">
-{{--            @if($own)--}}
-{{--                --}}{{-- image --}}
-{{--                <img src="https://placehold.co/600x400" alt="image" class="rounded-md">--}}
+            {{--            @if($own)--}}
+            {{--                --}}{{-- image --}}
+            {{--                <img src="https://placehold.co/600x400" alt="image" class="rounded-md">--}}
 
-{{--                --}}{{-- reply --}}
-{{--                <blockquote class="border-l-4 pl-2">--}}
-{{--                    <flux:link variant="subtle">@mention</flux:link>--}}
-{{--                    <p>reply message</p>--}}
-{{--                </blockquote>--}}
+            {{--                --}}{{-- reply --}}
+            {{--                <blockquote class="border-l-4 pl-2">--}}
+            {{--                    <flux:link variant="subtle">@mention</flux:link>--}}
+            {{--                    <p>reply message</p>--}}
+            {{--                </blockquote>--}}
 
-{{--                --}}{{-- mention --}}
-{{--                <flux:link variant="subtle">@mention</flux:link>--}}
-{{--            @endif--}}
+            {{--                --}}{{-- mention --}}
+            {{--                <flux:link variant="subtle">@mention</flux:link>--}}
+            {{--            @endif--}}
 
             @if ($isOwned)
-                <div x-show="editing" x-cloak class="space-y-2" x-bind:style="width ? `width: ${width}` : ''">
-                    <flux:textarea x-model="draft" rows="3" class="w-full" />
-                    <div class="flex gap-2 justify-end">
-                        <flux:button size="sm" variant="subtle" x-on:click="editing=false; draft=initial">{{ __('Cancel') }}</flux:button>
-                        <flux:button size="sm" variant="primary" x-on:click="$wire.saveEdit(draft).then(() => { editing=false })">{{ __('Save') }}</flux:button>
+                <div x-show="editing" x-cloak>
+                    <div class="space-y-2 min-w-100" x-bind:style="width ? `width: ${width}` : ''">
+                        <flux:textarea x-model="draft" rows="1" class="w-full"/>
+                        <div class="flex gap-2 justify-end">
+                            <flux:button size="sm" variant="subtle"
+                                         x-on:click="editing=false; draft=initial">{{ __('Cancel') }}</flux:button>
+                            <flux:button size="sm" variant="primary"
+                                         x-on:click="$wire.saveEdit(draft).then(() => { editing=false })">{{ __('Save') }}</flux:button>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -88,7 +101,7 @@ new class extends Component {
     </div>
 
     <flux:dropdown class="hidden">
-        <flux:button size="xs" variant="ghost" icon="ellipsis-vertical" />
+        <flux:button size="xs" variant="ghost" icon="ellipsis-vertical"/>
 
         <flux:menu>
             @if ($isOwned)

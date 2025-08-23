@@ -27,7 +27,7 @@ new class extends Component {
     {
         // Ensure related users are available for header rendering
         $this->room     = $chatRoom->loadMissing('users');
-        $this->messages = $chatRoom->messages;
+        $this->messages = $chatRoom->messages->reverse();
         $this->title = $this->displayTitle();
     }
 
@@ -43,15 +43,6 @@ new class extends Component {
         });
 
         return $other?->name ?? ($this->room->name ?? __('Direct Chat'));
-    }
-
-    protected function otherParticipant(): ?User
-    {
-        $currentId = Auth::id();
-
-        return $this->room->users->first(function (User $user) use ($currentId) {
-            return $user->getKey() !== $currentId;
-        });
     }
 
     public function addMessage(): void
@@ -77,7 +68,7 @@ new class extends Component {
         ]);
 
         // Keep in-memory list in sync for instant UI feedback
-        $this->messages->push($message);
+        $this->messages->unshift($message);
 
         // Clear input
         $this->text = '';
@@ -93,17 +84,17 @@ new class extends Component {
     <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8">
         <header class="flex gap-2 mt-15 lg:mt-3 items-center">
             <flux:modal.trigger name="profile-info">
-                <flux:avatar circle badge badge:circle badge:color="green" :name="$this->displayTitle()" href="#"/>
+                <flux:avatar circle badge badge:circle badge:color="green" :name="$title" href="#"/>
 
                 <flux:heading size="xl">
-                    <flux:link variant="ghost">{{ $this->displayTitle() }}</flux:link>
+                    <flux:link variant="ghost">{{ $title }}</flux:link>
                 </flux:heading>
             </flux:modal.trigger>
 
             <flux:modal name="profile-info" variant="flyout" position="right">
                 <div class="flex flex-col gap-4 items-center">
-                    <flux:avatar circle :name="$this->displayTitle()" size="xl"/>
-                    <flux:heading size="xl">{{ $this->displayTitle() }}</flux:heading>
+                    <flux:avatar circle :name="$title" size="xl"/>
+                    <flux:heading size="xl">{{ $title }}</flux:heading>
                     <flux:text>Introduction text</flux:text>
                     <flux:text>Last seen: 10 minutes ago</flux:text>
                 </div>
@@ -128,7 +119,7 @@ new class extends Component {
                 <input type="file" x-ref="file" class="hidden"/>
 
                 <flux:input.group>
-                    <flux:input placeholder="{{ __('Say something...') }}" wire:model.live="text"/>
+                    <flux:input placeholder="{{ __('Say something...') }}" wire:model="text"/>
 
                     <flux:button icon="plus" @click="$refs.file.click()"/>
                     <flux:button type="submit" icon="paper-airplane"/>
@@ -136,7 +127,7 @@ new class extends Component {
             </form>
 
             @foreach($messages as $message)
-                <livewire:chat.message :message="$message"/>
+                <livewire:chat.message :message="$message" :key="$message->getKey()"/>
             @endforeach
 
             <flux:separator variant="subtle" text="{{ __('Start conversation') }}"/>
