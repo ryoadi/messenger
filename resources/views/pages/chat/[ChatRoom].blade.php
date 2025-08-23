@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\ChatMessage;
 use App\Models\ChatRoom;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
@@ -13,10 +15,44 @@ new class extends Component {
     #[Locked]
     public Collection $messages;
 
+    public string $text = '';
+
     public function mount(ChatRoom $chatRoom): void
     {
         $this->room = $chatRoom;
         $this->messages = $chatRoom->messages;
+    }
+
+    public function addMessage(): void
+    {
+        $validated = validator(
+            ['content' => $this->text],
+            ['content' => ['required', 'string']]
+        )->validate();
+
+        $content = trim((string) $validated['content']);
+        if ($content === '') {
+            return; // no-op if only whitespace
+        }
+
+        $userId = Auth::id();
+        abort_unless($userId !== null, 403);
+
+        /** @var ChatMessage $message */
+        $message = ChatMessage::query()->create([
+            'chat_room_id' => $this->room->getKey(),
+            'user_id' => $userId,
+            'content' => $content,
+        ]);
+
+        // Keep in-memory list in sync for instant UI feedback
+        $this->messages->push($message);
+
+        // Clear input
+        $this->text = '';
+
+        // Optional: let listeners scroll or react
+        $this->dispatch('message-created', id: $message->getKey());
     }
 
 }; ?>
@@ -45,7 +81,7 @@ new class extends Component {
 
         <main class="flex flex-col-reverse gap-3 grow overflow-y-auto -mr-8 pr-8" x-data x-ref="container">
             <!-- chatbox -->
-            <form class="pb-3 pt-2 space-y-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data>
+            <form class="pb-3 pt-2 space-y-2 sticky bottom-0 bg-white dark:bg-zinc-800 z-10" x-data wire:submit.prevent="addMessage">
                 <flux:button variant="ghost" size="xs" icon="chevron-down" class="w-full"
                              @click="$refs.container.scrollTo(0, $refs.container.scrollHeight)"/>
 
@@ -60,10 +96,10 @@ new class extends Component {
                 <input type="file" x-ref="file" class="hidden"/>
 
                 <flux:input.group>
-                    <flux:input placeholder="{{ __('Say something...') }}"/>
+                    <flux:input placeholder="{{ __('Say something...') }}" wire:model.live="text" />
 
                     <flux:button icon="plus" @click="$refs.file.click()"/>
-                    <flux:button type="submit" icon="paper-airplane"/>
+                    <flux:button type="submit" icon="paper-airplane" />
                 </flux:input.group>
             </form>
 
