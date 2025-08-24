@@ -13,9 +13,12 @@ it('allows an authenticated user to add a new message to the chat room', functio
 
     $room = ChatRoom::factory()->create();
 
-    // Interact with the Volt page component directly
-    Volt::test('pages.chat.[ChatRoom]', [
-        'chatRoom' => $room,
+    // Ensure the authenticated user is a member of the room (policy requirement)
+    $room->users()->attach($user->getKey(), ['role' => 'member']);
+
+    // Interact with the Volt component directly
+    Volt::test('chat.room', [
+        'room' => $room,
     ])->set('text', '  Hello from Volt  ')
         ->call('addMessage')
         ->assertSuccessful();
@@ -33,8 +36,7 @@ it('allows an authenticated user to add a new message to the chat room', functio
     $response = $this->get("/chat/{$room->getRouteKey()}");
     $response->assertSuccessful();
     $response->assertSee('Hello from Volt', escape: false);
-})
-    ->skip('Skipping until Volt::test can target Volt pages in this project.');
+});
 
 it('rejects creating an empty or whitespace-only message', function () {
     $user = User::factory()->create();
