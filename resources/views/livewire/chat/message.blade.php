@@ -25,22 +25,20 @@ new class extends Component {
         $this->isOwned = Gate::allows('manage', $this->message);
     }
 
-    public function saveEdit(UpdateMessage $update, string $content): void
+    public function edit(UpdateMessage $update, string $content): void
     {
-        abort_unless($this->isOwned, 403);
         $update($this->message, $content);
     }
 
     public function delete(DeleteMessage $delete): void
     {
-        abort_unless($this->isOwned, 403);
         $delete($this->message);
     }
 
 }; ?>
 
-<div x-data="{ editing: false, initial: @js($message->content), draft: @js($message->content), width: null }"
-     x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null })"
+<div x-data="{ editing: false, initial: @js($message->content), draft: '', width: null }"
+     x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null; draft = initial })"
      class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $isOwned ? 'flex-row-reverse' : '' }}"
 >
     @if($group)
@@ -69,15 +67,17 @@ new class extends Component {
 
             @if ($isOwned)
                 <div x-show="editing" x-cloak>
-                    <div class="space-y-2 min-w-100" x-bind:style="width ? `width: ${width}` : ''">
+                    <form class="space-y-2 min-w-100" x-bind:style="width ? `width: ${width}` : ''"
+                          wire:submit.prevent="edit"
+                    >
                         <flux:textarea x-model="draft" rows="1" class="w-full"/>
                         <div class="flex gap-2 justify-end">
-                            <flux:button size="sm" variant="subtle"
+                            <flux:button size="sm" variant="subtle" type="button"
                                          x-on:click="editing=false; draft=initial">{{ __('Cancel') }}</flux:button>
-                            <flux:button size="sm" variant="primary"
-                                         x-on:click="$wire.saveEdit(draft).then(() => { editing=false })">{{ __('Save') }}</flux:button>
+                            <flux:button size="sm" variant="primary" type="submit"
+                                         x-on:click="editing=false">{{ __('Save') }}</flux:button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             @endif
             <p x-show="!editing" x-ref="content" class="whitespace-pre-line">{{ $message->content }}</p>

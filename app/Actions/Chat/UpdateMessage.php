@@ -6,6 +6,7 @@ namespace App\Actions\Chat;
 
 use App\Models\ChatMessage;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 final class UpdateMessage
 {
@@ -13,17 +14,17 @@ final class UpdateMessage
     {
         Gate::authorize('manage', $message);
 
-        $validated = validator(
-            ['content' => $rawContent],
+        $newContent = Str::trim($rawContent);
+        if ($newContent === $message->content) {
+            return $message;
+        }
+
+        validator(
+            ['content' => $newContent],
             ['content' => ['required', 'string']]
         )->validate();
 
-        $newContent = trim((string) $validated['content']);
-
-        if ($newContent !== (string) $message->content) {
-            $message->update(['content' => $newContent]);
-        }
-
+        $message->update(['content' => $newContent]);
         return $message->refresh();
     }
 }
