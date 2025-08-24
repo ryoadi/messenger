@@ -17,7 +17,6 @@
         "livewire/volt": "^1.7.0"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.14",
         "fakerphp/faker": "^1.23",
         "fruitcake/laravel-telescope-toolbar": "^1.0",
         "larastan/larastan": "^3.6",
