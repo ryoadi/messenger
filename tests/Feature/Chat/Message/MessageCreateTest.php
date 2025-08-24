@@ -43,12 +43,14 @@ it('rejects creating an empty or whitespace-only message', function () {
     $this->actingAs($user);
     $room = ChatRoom::factory()->create();
 
-    Volt::test('pages.chat.[ChatRoom]', [
-        'chatRoom' => $room,
+    // Ensure the authenticated user is a member of the room (policy requirement)
+    $room->users()->attach($user->getKey(), ['role' => 'member']);
+
+    Volt::test('chat.room', [
+        'room' => $room,
     ])->set('text', '   ')
         ->call('addMessage')
         ->assertSuccessful();
 
     expect(ChatMessage::query()->where('chat_room_id', $room->getKey())->exists())->toBeFalse();
-})
-    ->skip('Skipping until Volt::test can target Volt pages in this project.');
+});

@@ -26,23 +26,23 @@ new class extends Component {
     public function mount(): void
     {
         // Ensure related users are available for header rendering
-        $this->room     = $this->room->loadMissing('users');
-        $this->messages = $this->room->messages->reverse();
-        $this->title = $this->displayTitle();
+        $this->room->loadMissing('users');
+        $this->messages = $this->room->messages;
+        $this->title    = $this->getTitle($this->room);
     }
 
-    protected function displayTitle(): string
+    protected function getTitle(ChatRoom $room): string
     {
-        if ($this->room->type === ChatRoomType::Group) {
-            return (string) ($this->room->name ?? __('Group Chat'));
+        if ($room->type === ChatRoomType::Group) {
+            return (string) ($room->name ?? __('Group Chat'));
         }
 
         $currentId = Auth::id();
-        $other = $this->room->users->first(function (User $user) use ($currentId) {
+        $other     = $room->users->first(function (User $user) use ($currentId) {
             return $user->getKey() !== $currentId;
         });
 
-        return $other?->name ?? ($this->room->name ?? __('Direct Chat'));
+        return $other?->name ?? ($room->name ?? __('Direct Chat'));
     }
 
     public function addMessage(): void
