@@ -7,9 +7,11 @@ use App\Models\ChatRoom;
 use App\Models\User;
 use Livewire\Volt\Volt;
 
+use function Pest\Laravel\actingAs;
+
 it('allows the owner to delete their message', function () {
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $room = ChatRoom::factory()->create();
 
@@ -29,7 +31,7 @@ it('allows the owner to delete their message', function () {
 it('forbids deleting a message not owned by the user', function () {
     $owner = User::factory()->create();
     $other = User::factory()->create();
-    $this->actingAs($other);
+    actingAs($other);
 
     $room = ChatRoom::factory()->create();
 

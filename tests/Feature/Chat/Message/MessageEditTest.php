@@ -7,9 +7,11 @@ use App\Models\ChatRoom;
 use App\Models\User;
 use Livewire\Volt\Volt;
 
+use function Pest\Laravel\actingAs;
+
 it('allows the owner to edit a message and persists the change', function () {
     $user = User::factory()->create();
-    $this->actingAs($user);
+    actingAs($user);
 
     $room = ChatRoom::factory()->create();
 
@@ -37,7 +39,7 @@ it('allows the owner to edit a message and persists the change', function () {
 it('forbids editing a message not owned by the user', function () {
     $owner = User::factory()->create();
     $other = User::factory()->create();
-    $this->actingAs($other);
+    actingAs($other);
 
     $room = ChatRoom::factory()->create();
 

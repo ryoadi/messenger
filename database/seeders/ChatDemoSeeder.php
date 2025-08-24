@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\ChatRoomType;
 use App\ChatRoomUserRole;
 use App\Models\ChatMessage;
 use App\Models\ChatRoom;
