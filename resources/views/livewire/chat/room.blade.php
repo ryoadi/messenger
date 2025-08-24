@@ -1,12 +1,8 @@
 <?php
 
-use App\ChatRoomType;
-use App\Models\ChatMessage;
+use App\Actions\Chat\CreateMessage;
 use App\Models\ChatRoom;
-use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
@@ -28,53 +24,18 @@ new class extends Component {
         // Ensure related users are available for header rendering
         $this->room->loadMissing('users');
         $this->messages = $this->room->messages;
-        $this->title    = $this->getTitle($this->room);
+        $this->title    = (string) $this->room->title; // model accessor
     }
 
-    protected function getTitle(ChatRoom $room): string
+    public function addMessage(CreateMessage $create): void
     {
-        if ($room->type === ChatRoomType::Group) {
-            return (string) ($room->name ?? __('Group Chat'));
-        }
-
-        $currentId = Auth::id();
-        $other     = $room->users->first(function (User $user) use ($currentId) {
-            return $user->getKey() !== $currentId;
-        });
-
-        return $other?->name ?? ($room->name ?? __('Direct Chat'));
-    }
-
-    public function addMessage(): void
-    {
-        $validated = validator(
-            ['content' => $this->text],
-            ['content' => ['required', 'string']]
-        )->validate();
-
-        $content = trim((string) $validated['content']);
-        if ($content === '') {
-            return; // no-op if only whitespace
-        }
-
-        // Authorize via policy: user must belong to the chat room
-        Gate::authorize('addMessage', $this->room);
-
-        /** @var ChatMessage $message */
-        $message = ChatMessage::query()->create([
-            'chat_room_id' => $this->room->getKey(),
-            'user_id'      => (int) Auth::id(),
-            'content'      => $content,
-        ]);
+        $message = $create($this->room, $this->text);
 
         // Keep in-memory list in sync for instant UI feedback
         $this->messages->unshift($message);
 
         // Clear input
         $this->text = '';
-
-        // Optional: let listeners scroll or react
-        $this->dispatch('message-created', id: $message->getKey());
     }
 
 }; ?>

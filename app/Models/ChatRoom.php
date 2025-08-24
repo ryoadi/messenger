@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use App\ChatRoomType;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ChatRoom extends Model
@@ -50,5 +53,19 @@ class ChatRoom extends Model
     public function messages()
     {
         return $this->hasMany(ChatMessage::class)->latest();
+    }
+
+    protected function title(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if ($this->type === ChatRoomType::Group) {
+                return (string) ($this->name ?? __('Group Chat'));
+            }
+
+            $currentId = Auth::id();
+            $other = $this->users?->first(fn (User $u) => $u->getKey() !== $currentId);
+
+            return $other?->name ?? ($this->name ?? __('Direct Chat'));
+        });
     }
 }

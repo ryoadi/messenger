@@ -26,10 +26,7 @@ it('allows the owner to edit a message and persists the change', function () {
         'message' => $message,
         'group' => false,
     ])->call('saveEdit', content: $new)
-        ->assertSuccessful()
-        ->assertDispatched('message-updated', function (string $event, array $params) use ($message): bool {
-            return ($params['id'] ?? null) === $message->getKey();
-        });
+        ->assertSuccessful();
 
     // The content should be trimmed and persisted
     $message->refresh();

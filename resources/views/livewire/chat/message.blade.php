@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\Chat\DeleteMessage;
+use App\Actions\Chat\UpdateMessage;
 use App\Models\ChatMessage;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
@@ -23,34 +25,16 @@ new class extends Component {
         $this->isOwned = Gate::allows('manage', $this->message);
     }
 
-    public function saveEdit(string $content): void
+    public function saveEdit(UpdateMessage $update, string $content): void
     {
         abort_unless($this->isOwned, 403);
-
-        $validated = validator(
-            ['content' => $content],
-            ['content' => ['required', 'string']]
-        )->validate();
-
-        $newContent = trim((string) $validated['content']);
-
-        // Only update if changed
-        if ($newContent !== (string) $this->message->content) {
-            $this->message->update(['content' => $newContent]);
-            $this->dispatch('message-updated', id: $this->message->getKey());
-        }
+        $update($this->message, $content);
     }
 
-    public function delete(): void
+    public function delete(DeleteMessage $delete): void
     {
-        // Authorize using computed ownership
         abort_unless($this->isOwned, 403);
-
-        $id = $this->message->getKey();
-        $this->message->delete();
-
-        // Let any parent/listeners know so they can update UI
-        $this->dispatch('message-deleted', id: $id);
+        $delete($this->message);
     }
 
 }; ?>
