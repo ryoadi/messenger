@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Chat\ListChatRooms;
-use App\Actions\Chat\ListChatRoomsQuery;
+use App\Actions\Chat\ListChatRoomsFilter;
 use App\ChatRoomType;
 use App\ChatRoomUserRole;
 use App\Models\ChatRoom;
@@ -18,9 +18,8 @@ it('lists only rooms for the user', function () {
     $others = ChatRoom::factory()->group()->create(['name' => 'Beta']);
 
     $action = app(ListChatRooms::class);
-    $result = $action->handle(new ListChatRoomsQuery(
+    $result = $action(new ListChatRoomsFilter(
         userId: $me->id,
-        paginate: false,
     ));
 
     expect($result->pluck('id'))
@@ -34,7 +33,7 @@ it('filters by type and searches correctly', function () {
     $direct = ChatRoom::factory()->direct()->create();
     $alice = User::factory()->create(['name' => 'Alice']);
     $direct->users()->sync([
-        $me->id => ['role' => ChatRoomUserRole::Owner],
+        $me->id => ['role' => ChatRoomUserRole::Member],
         $alice->id => ['role' => ChatRoomUserRole::Member],
     ]);
 
@@ -44,22 +43,20 @@ it('filters by type and searches correctly', function () {
     $action = app(ListChatRooms::class);
 
     // Search by other user name in direct
-    $r1 = $action->handle(new ListChatRoomsQuery(
+    $resultDirect = $action(new ListChatRoomsFilter(
         userId: $me->id,
         type: ChatRoomType::Direct,
-        search: 'Ali',
-        paginate: false,
+        keyword: 'Ali',
     ));
-    expect($r1->pluck('id'))->toContain($direct->id);
+    expect($resultDirect->pluck('id'))->toContain($direct->id);
 
     // Search by group title
-    $r2 = $action->handle(new ListChatRoomsQuery(
+    $resultGroup = $action(new ListChatRoomsFilter(
         userId: $me->id,
         type: ChatRoomType::Group,
-        search: 'Rocket',
-        paginate: false,
+        keyword: 'Rocket',
     ));
-    expect($r2->pluck('id'))->toContain($group->id);
+    expect($resultGroup->pluck('id'))->toContain($group->id);
 });
 
 it('orders by updated_at desc', function () {
@@ -73,9 +70,8 @@ it('orders by updated_at desc', function () {
 
     $action = app(ListChatRooms::class);
 
-    $result = $action->handle(new ListChatRoomsQuery(
+    $result = $action(new ListChatRoomsFilter(
         userId: $me->id,
-        paginate: false,
     ));
 
     expect($result->first()->id)->toBe($newer->id);
