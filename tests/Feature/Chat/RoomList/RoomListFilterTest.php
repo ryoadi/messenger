@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Actions\Chat\ListChatRooms;
-use App\Actions\Chat\ListChatRoomsFilter;
-use App\ChatRoomType;
-use App\ChatRoomUserRole;
+use App\Actions\Chat\ListRooms;
+use App\Actions\Chat\DTO\ListRoomsFilter;
+use App\Models\Enums\ChatRoomType;
+use App\Models\Enums\ChatRoomUserRole;
 use App\Models\ChatRoom;
 use App\Models\User;
 
@@ -17,8 +17,8 @@ it('lists only rooms for the user', function () {
 
     $others = ChatRoom::factory()->group()->create(['name' => 'Beta']);
 
-    $action = app(ListChatRooms::class);
-    $result = $action(new ListChatRoomsFilter(
+    $action = app(ListRooms::class);
+    $result = $action(new ListRoomsFilter(
         userId: $me->id,
     ));
 
@@ -40,10 +40,10 @@ it('filters by type and searches correctly', function () {
     $group = ChatRoom::factory()->group()->create(['name' => 'Team Rocket']);
     $group->users()->attach($me, ['role' => ChatRoomUserRole::Owner]);
 
-    $action = app(ListChatRooms::class);
+    $action = app(ListRooms::class);
 
     // Search by other user name in direct
-    $resultDirect = $action(new ListChatRoomsFilter(
+    $resultDirect = $action(new ListRoomsFilter(
         userId: $me->id,
         type: ChatRoomType::Direct,
         keyword: 'Ali',
@@ -51,7 +51,7 @@ it('filters by type and searches correctly', function () {
     expect($resultDirect->pluck('id'))->toContain($direct->id);
 
     // Search by group title
-    $resultGroup = $action(new ListChatRoomsFilter(
+    $resultGroup = $action(new ListRoomsFilter(
         userId: $me->id,
         type: ChatRoomType::Group,
         keyword: 'Rocket',
@@ -68,9 +68,9 @@ it('orders by updated_at desc', function () {
     $newer = ChatRoom::factory()->group()->create(['name' => 'New Group', 'updated_at' => now()]);
     $newer->users()->attach($me, ['role' => ChatRoomUserRole::Owner]);
 
-    $action = app(ListChatRooms::class);
+    $action = app(ListRooms::class);
 
-    $result = $action(new ListChatRoomsFilter(
+    $result = $action(new ListRoomsFilter(
         userId: $me->id,
     ));
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\ChatRoomUserRole;
+use App\Models\Enums\ChatRoomUserRole;
 use App\Models\ChatRoom;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;

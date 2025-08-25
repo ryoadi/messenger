@@ -1,9 +1,9 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Actions\Chat\ListChatRooms;
-use App\Actions\Chat\ListChatRoomsFilter;
-use App\ChatRoomType;
+use App\Actions\Chat\ListRooms;
+use App\Actions\Chat\DTO\ListRoomsFilter;
+use App\Models\Enums\ChatRoomType;
 use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
@@ -12,7 +12,7 @@ new class extends Component {
     public string $filter = 'all'; // all|direct|group
     public int $perPage = 20;
 
-    public function getRoomsProperty(ListChatRooms $action)
+    public function getRoomsProperty(ListRooms $action)
     {
         $type = match ($this->filter) {
             'direct' => ChatRoomType::Direct,
@@ -20,7 +20,7 @@ new class extends Component {
             default => null,
         };
 
-        return $action(new ListChatRoomsFilter(
+        return $action(new ListRoomsFilter(
             (int) Auth::id(),
             $type,
             $this->search,
@@ -97,10 +97,8 @@ new class extends Component {
                 </flux:navlist.item>
             @endforeach
 
-            @if ($this->rooms->hasMorePages())
                 <flux:button variant="subtle" size="sm" class="w-full mt-2" wire:click="$set('perPage', $perPage + 20)"
                              wire:loading.attr="disabled">{{ __('Load more') }}</flux:button>
-            @endif
         </flux:navlist>
     </div>
 

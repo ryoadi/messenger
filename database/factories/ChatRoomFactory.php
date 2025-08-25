@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\ChatRoomType;
+use App\Models\Enums\ChatRoomType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

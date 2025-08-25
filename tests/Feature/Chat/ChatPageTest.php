@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\ChatRoomUserRole;
+use App\Models\Enums\ChatRoomUserRole;
 use App\Models\ChatRoom;
 
 use function Pest\Laravel\actingAs;

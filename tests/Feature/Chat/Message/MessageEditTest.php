@@ -25,7 +25,7 @@ it('allows the owner to edit a message and persists the change', function () {
     Volt::test('chat.message', [
         'message' => $message,
         'group' => false,
-    ])->call('saveEdit', content: $new)
+    ])->call('edit', content: $new)
         ->assertSuccessful();
 
     // The content should be trimmed and persisted
@@ -48,7 +48,7 @@ it('forbids editing a message not owned by the user', function () {
     Volt::test('chat.message', [
         'message' => $message,
         'group' => false,
-    ])->call('saveEdit', content: 'Hacked')
+    ])->call('edit', content: 'Hacked')
         ->assertForbidden();
 
     // Ensure content unchanged

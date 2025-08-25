@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace App\Models\Policies;
 
 use App\Models\ChatRoom;
 use App\Models\User;

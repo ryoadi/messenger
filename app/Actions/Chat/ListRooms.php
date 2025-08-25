@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Actions\Chat;
 
-use App\ChatRoomType;
+use App\Actions\Chat\DTO\ListRoomsFilter;
+use App\Models\Enums\ChatRoomType;
 use App\Models\ChatRoom;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
-final class ListChatRooms
+final class ListRooms
 {
-    public function __invoke(ListChatRoomsFilter $filters): Collection
+    public function __invoke(ListRoomsFilter $filters): Collection
     {
         return ChatRoom::query()
             ->orderByDesc('updated_at')

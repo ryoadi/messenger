@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Policies;
+namespace App\Models\Policies;
 
 use App\Models\ChatMessage;
 use App\Models\User;

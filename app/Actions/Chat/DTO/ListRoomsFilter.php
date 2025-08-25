@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Chat;
+namespace App\Actions\Chat\DTO;
 
-use App\ChatRoomType;
+use App\Models\Enums\ChatRoomType;
 use Illuminate\Support\Str;
 
-final class ListChatRoomsFilter
+final class ListRoomsFilter
 {
     public function __construct(
         public readonly int $userId,
