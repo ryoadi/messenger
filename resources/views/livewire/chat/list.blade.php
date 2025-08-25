@@ -10,7 +10,6 @@ new class extends Component {
 
     public string $search = '';
     public string $filter = 'all'; // all|direct|group
-    public int $perPage = 20;
 
     public function getRoomsProperty(ListRooms $action)
     {
@@ -97,7 +96,7 @@ new class extends Component {
                 </flux:navlist.item>
             @endforeach
 
-                <flux:button variant="subtle" size="sm" class="w-full mt-2" wire:click="$set('perPage', $perPage + 20)"
+                <flux:button variant="subtle" size="sm" class="w-full mt-2"
                              wire:loading.attr="disabled">{{ __('Load more') }}</flux:button>
         </flux:navlist>
     </div>
