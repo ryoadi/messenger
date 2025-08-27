@@ -2,14 +2,25 @@
 
 use Livewire\Volt\Component;
 use App\Actions\Chat\ListRooms;
+use App\Actions\Chat\CreateRoom;
 use App\Actions\Chat\DTO\ListRoomsFilter;
 use App\Models\Enums\ChatRoomType;
+use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 new class extends Component {
 
+    // Sidebar filters
     public string $search = '';
     public string $filter = 'all'; // all|direct|group
+
+    // Create room modal state
+    public string $roomTitle = '';
+    public string $userSearch = '';
+    /** @var array<int,int> */
+    public array $selectedUserIds = [];
 
     public function getRoomsProperty(ListRooms $action)
     {
@@ -24,6 +35,95 @@ new class extends Component {
             $type,
             $this->search,
         ));
+    }
+
+    public function getUsersProperty(): Collection
+    {
+        $currentId = (int) Auth::id();
+
+        return User::query()
+            ->whereKeyNot($currentId)
+            ->when($this->userSearch !== '', function ($q) {
+                $term = '%' . $this->userSearch . '%';
+                $q->where(function ($q) use ($term) {
+                    $q->where('name', 'like', $term)
+                      ->orWhere('email', 'like', $term);
+                });
+            })
+            ->orderBy('name')
+            ->limit(50)
+            ->get();
+    }
+
+    public function getSelectedUsersProperty(): Collection
+    {
+        if (empty($this->selectedUserIds)) {
+            return collect();
+        }
+
+        return User::query()
+            ->whereIn('id', $this->selectedUserIds)
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function toggleSelectUser(int $userId): void
+    {
+        $currentId = (int) Auth::id();
+        if ($userId === $currentId) {
+            return; // cannot select self
+        }
+
+        if (in_array($userId, $this->selectedUserIds, true)) {
+            $this->selectedUserIds = array_values(array_filter($this->selectedUserIds, fn ($id) => $id !== $userId));
+        } else {
+            $this->selectedUserIds[] = $userId;
+        }
+
+        // If we are at direct selection (1 user), ensure title is empty
+        if (count($this->selectedUserIds) <= 1) {
+            $this->roomTitle = '';
+        }
+    }
+
+    public function removeSelected(int $userId): void
+    {
+        $this->selectedUserIds = array_values(array_filter($this->selectedUserIds, fn ($id) => $id !== $userId));
+        if (count($this->selectedUserIds) <= 1) {
+            $this->roomTitle = '';
+        }
+    }
+
+    public function create(CreateRoom $createRoom)
+    {
+        $currentId = (int) Auth::id();
+
+        // Validate basic rules at component level for better UX
+        $selected = array_values(array_unique(array_map('intval', $this->selectedUserIds)));
+        $selected = array_values(array_filter($selected, fn ($id) => $id !== $currentId));
+
+        if (count($selected) < 1) {
+            throw ValidationException::withMessages([
+                'users' => __('Please select at least one user.'),
+            ]);
+        }
+
+        if (count($selected) >= 2 && trim($this->roomTitle) === '') {
+            throw ValidationException::withMessages([
+                'name' => __('Group chat room title is required.'),
+            ]);
+        }
+
+        if (count($selected) === 1) {
+            $this->roomTitle = '';
+        }
+
+        $room = $createRoom($currentId, $selected, $this->roomTitle);
+
+        // Reset and redirect
+        $this->reset(['roomTitle', 'userSearch', 'selectedUserIds']);
+
+        return redirect()->route('chat.show', $room);
     }
 
 }; ?>
@@ -49,39 +149,41 @@ new class extends Component {
             <flux:heading size="lg">{{ __('Create a new room') }}</flux:heading>
 
             <div class="space-y-2">
-                <flux:button type="submit" variant="primary" size="sm" class="w-full">{{ __('Create') }}</flux:button>
-                <flux:input size="sm" placeholder="{{ __('Room name') }}"/>
+                <flux:button type="button" variant="primary" size="sm" class="w-full"
+                             wire:click="create"
+                             wire:loading.attr="disabled">
+                    {{ __('Create') }}
+                </flux:button>
+
+                <flux:input size="sm" placeholder="{{ __('Room name') }}"
+                            :disabled="count($selectedUserIds) <= 1"
+                            wire:model.live="roomTitle"/>
 
                 <div class="flex gap-2 flex-wrap">
-                    <flux:badge variant="pill" size="sm">username
-                        <flux:badge.close/>
-                    </flux:badge>
-                    <flux:badge variant="pill" size="sm">username
-                        <flux:badge.close/>
-                    </flux:badge>
-                    <flux:badge variant="pill" size="sm">username
-                        <flux:badge.close/>
-                    </flux:badge>
-                    <flux:badge variant="pill" size="sm">username
-                        <flux:badge.close/>
-                    </flux:badge>
-                    <flux:badge variant="pill" size="sm">username
-                        <flux:badge.close/>
-                    </flux:badge>
+                    @foreach ($this->selectedUsers as $user)
+                        <flux:badge variant="pill" size="sm">
+                            {{ $user->name }}
+                            <flux:badge.close wire:click="removeSelected({{ $user->id }})" />
+                        </flux:badge>
+                    @endforeach
                 </div>
 
-                <flux:input size="sm" type="search" placeholder="{{ __('Search') }}"/>
+                <flux:input size="sm" type="search" placeholder="{{ __('Search users') }}"
+                            wire:model.live.debounce.300ms="userSearch"/>
             </div>
 
             <div class="overflow-y-auto space-y-1">
-                @for ($index = 0; $index < 20; $index++)
-                    <flux:button size="sm" variant="ghost" class="w-full gap-2 justify-start">
-                        <flux:avatar badge badge:color="green" size="xs" name="username" href="#"/>
-                        username
+                @foreach ($this->users as $user)
+                    <flux:button size="sm"
+                                 :variant="in_array($user->id, $selectedUserIds, true) ? 'primary' : 'ghost'"
+                                 class="w-full gap-2 justify-start"
+                                 wire:click="toggleSelectUser({{ $user->id }})">
+                        <flux:avatar size="xs" name="{{ $user->name }}"/>
+                        <span class="truncate">{{ $user->name }}</span>
                     </flux:button>
-                @endfor
+                @endforeach
 
-                <flux:button variant="subtle" size="sm" class="w-full mt-2">{{ __('Load more') }}</flux:button>
+                <flux:button variant="subtle" size="sm" class="w-full mt-2" wire:loading.attr="disabled">{{ __('Load more') }}</flux:button>
             </div>
         </div>
     </flux:modal>
