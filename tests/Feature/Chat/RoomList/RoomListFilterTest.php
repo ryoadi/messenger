@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\Chat\ListRooms;
+use App\Actions\Chat\GetRooms;
 use App\Actions\Chat\DTO\ListRoomsFilter;
 use App\Models\Enums\ChatRoomType;
 use App\Models\Enums\ChatRoomUserRole;
@@ -17,7 +17,7 @@ it('lists only rooms for the user', function () {
 
     $others = ChatRoom::factory()->group()->create(['name' => 'Beta']);
 
-    $action = app(ListRooms::class);
+    $action = app(GetRooms::class);
     $result = $action(new ListRoomsFilter(
         userId: $me->id,
     ));
@@ -40,7 +40,7 @@ it('filters by type and searches correctly', function () {
     $group = ChatRoom::factory()->group()->create(['name' => 'Team Rocket']);
     $group->users()->attach($me, ['role' => ChatRoomUserRole::Owner]);
 
-    $action = app(ListRooms::class);
+    $action = app(GetRooms::class);
 
     // Search by other user name in direct
     $resultDirect = $action(new ListRoomsFilter(
@@ -68,7 +68,7 @@ it('orders by updated_at desc', function () {
     $newer = ChatRoom::factory()->group()->create(['name' => 'New Group', 'updated_at' => now()]);
     $newer->users()->attach($me, ['role' => ChatRoomUserRole::Owner]);
 
-    $action = app(ListRooms::class);
+    $action = app(GetRooms::class);
 
     $result = $action(new ListRoomsFilter(
         userId: $me->id,

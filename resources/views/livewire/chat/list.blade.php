@@ -1,7 +1,7 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Actions\Chat\ListRooms;
+use App\Actions\Chat\GetRooms;
 use App\Actions\Chat\DTO\ListRoomsFilter;
 use App\Models\Enums\ChatRoomType;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +12,7 @@ new class extends Component {
     public string $search = '';
     public string $filter = 'all'; // all|direct|group
 
-    public function getRoomsProperty(ListRooms $action)
+    public function getRoomsProperty(GetRooms $action)
     {
         $type = match ($this->filter) {
             'direct' => ChatRoomType::Direct,
@@ -45,7 +45,9 @@ new class extends Component {
         </div>
     </div>
 
-    <livewire:chat.create-room />
+    <flux:modal name="room-create" variant="flyout" position="left" class="h-dvh max-w-full md:max-w-1/4">
+        <livewire:chat.create-room/>
+    </flux:modal>
 
     <div class="overflow-y-auto">
         <flux:navlist>
@@ -57,8 +59,8 @@ new class extends Component {
                 </flux:navlist.item>
             @endforeach
 
-                <flux:button variant="subtle" size="sm" class="w-full mt-2"
-                             wire:loading.attr="disabled">{{ __('Load more') }}</flux:button>
+            <flux:button variant="subtle" size="sm" class="w-full mt-2"
+                         wire:loading.attr="disabled">{{ __('Load more') }}</flux:button>
         </flux:navlist>
     </div>
 

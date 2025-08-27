@@ -10,7 +10,7 @@ use App\Models\ChatRoom;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
-final class ListRooms
+final class GetRooms
 {
     public function __invoke(ListRoomsFilter $filters): Collection
     {
@@ -21,25 +21,28 @@ final class ListRooms
             ->whereHas('users', fn (Builder $userQuery) => $userQuery->whereKey($filters->userId))
 
             // Optional type filter: direct/group; null means all
-            ->when(! empty($filters->type), fn (Builder $query) => $query->where('type', $filters->type))
+            ->when(!empty($filters->type))->where('type', $filters->type)
 
             // Search rules:
             // - Group rooms by title (name LIKE %term%)
             // - Direct rooms by the other participant's name
-            ->when($filters->keyword, fn (Builder $query) => $query->where(
+            ->when($filters->keyword)->where(
                 fn (Builder $query) => $query
                     // Group title search
-                    ->where(fn (Builder $query) => $query->where('type', ChatRoomType::Group)
+                    ->where(fn (Builder $query) => $query
+                        ->where('type', ChatRoomType::Group)
                         ->whereLike('name', "%{$filters->keyword}%")
                     )
                     // Direct search by other user name
-                    ->orWhere(fn (Builder $query) => $query->where('type', ChatRoomType::Direct)
+                    ->orWhere(fn (Builder $query) => $query
+                        ->where('type', ChatRoomType::Direct)
                         ->whereHas('users',
-                            fn (Builder $userQuery) => $userQuery->where('users.id', '!=', $filters->userId)
+                            fn (Builder $userQuery) => $userQuery
+                                ->whereNot('users.id', $filters->userId)
                                 ->whereLike('users.name', "%{$filters->keyword}%")
                         )
                     )
-            ))
+            )
 
             // No Pagination.
             ->get();
