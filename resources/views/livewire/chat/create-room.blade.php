@@ -3,6 +3,7 @@
 use App\Actions\Chat\CreateRoom\GetUsers;
 use App\Actions\Chat\DTO\CreateGroupRoomInput;
 use Illuminate\Http\RedirectResponse;
+use Livewire\Features\SupportRedirects\Redirector;
 use Livewire\Volt\Component;
 use App\Actions\Chat\CreateRoom\CreateDirectRoom;
 use App\Actions\Chat\CreateRoom\CreateGroupRoom;
@@ -38,11 +39,11 @@ new class extends Component {
         unset($this->selectedUsers[$userId]);
     }
 
-    public function create(CreateDirectRoom $createDirectRoom, CreateGroupRoom $createGroupRoom): RedirectResponse
+    public function create(CreateDirectRoom $createDirectRoom, CreateGroupRoom $createGroupRoom): Redirector
     {
         $currentId = (int) Auth::id();
         $room      = count($this->selectedUsers) === 1
-            ? $createDirectRoom($currentId, array_first($this->selectedUsers))
+            ? $createDirectRoom($currentId, array_key_first($this->selectedUsers))
             : $createGroupRoom(new CreateGroupRoomInput(
                 $this->name,
                 $currentId,
@@ -52,7 +53,7 @@ new class extends Component {
         // Reset and redirect
         $this->reset(['name', 'keyword', 'selectedUsers']);
 
-        return redirect()->route('chat.show', $room);
+        return redirect()->route('chat.show', ['chatRoom' => $room]);
     }
 
 }; ?>

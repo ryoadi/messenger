@@ -9,7 +9,6 @@ use App\Models\ChatRoom;
 use App\Models\Enums\ChatRoomType;
 use App\Models\Enums\ChatRoomUserRole;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -36,10 +35,9 @@ final class CreateGroupRoom
             ]
         );
 
-        $room = new ChatRoom([
-            'type' => ChatRoomType::Group,
-            'name' => $data->name,
-        ]);
+        $room = new ChatRoom;
+        $room->type = ChatRoomType::Group;
+        $room->name = $data->name;
 
         DB::transaction(function () use ($room, $data) {
             $room->save();
