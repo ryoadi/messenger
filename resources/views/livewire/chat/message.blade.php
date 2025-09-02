@@ -18,27 +18,29 @@ new class extends Component {
     #[Locked]
     public ChatMessage $message;
 
-    public string $contentDraft = '';
+    public string $editedMessage = '';
 
     public function mount(): void
     {
         $this->isOwned = Gate::allows('manage', $this->message);
+        $this->editedMessage = $this->message->content;
     }
 
-    public function edit(UpdateMessage $update, string $content): void
+    public function edit(UpdateMessage $update): void
     {
-        $update($this->message, $content);
+        $this->message = $update($this->message, $this->editedMessage);
     }
 
     public function delete(DeleteMessage $delete): void
     {
         $delete($this->message);
+
     }
 
 }; ?>
 
-<div x-data="{ editing: false, initial: @js($message->content), draft: '', width: null }"
-     x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null; draft = initial })"
+<div x-data="{ editing: false, width: null }"
+     x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null })"
      class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $isOwned ? 'flex-row-reverse' : '' }}"
 >
     @if($group)
@@ -70,10 +72,10 @@ new class extends Component {
                     <form class="space-y-2 min-w-100" x-bind:style="width ? `width: ${width}` : ''"
                           wire:submit.prevent="edit"
                     >
-                        <flux:textarea x-model="draft" rows="1" class="w-full"/>
+                        <flux:textarea wire:model="editedMessage" rows="1" class="w-full"/>
                         <div class="flex gap-2 justify-end">
                             <flux:button size="sm" variant="subtle" type="button"
-                                         x-on:click="editing=false; draft=initial">{{ __('Cancel') }}</flux:button>
+                                         x-on:click="editing=false;">{{ __('Cancel') }}</flux:button>
                             <flux:button size="sm" variant="primary" type="submit"
                                          x-on:click="editing=false">{{ __('Save') }}</flux:button>
                         </div>
@@ -89,7 +91,7 @@ new class extends Component {
 
         <flux:menu>
             @if ($isOwned)
-                <flux:menu.item icon="pencil" x-on:click="editing=true; draft=initial">{{ __('Edit') }}</flux:menu.item>
+                <flux:menu.item icon="pencil" x-on:click="editing=true">{{ __('Edit') }}</flux:menu.item>
                 <flux:modal.trigger name="delete-message">
                     <flux:menu.item variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
                 </flux:modal.trigger>

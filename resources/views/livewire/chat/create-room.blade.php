@@ -70,7 +70,7 @@ new class extends Component {
 
         <flux:input size="sm" placeholder="{{ __('Room name') }}"
                     :disabled="count($selectedUsers) <= 1"
-                    wire:model.live="roomTitle"/>
+                    wire:model.live="name"/>
 
         <div class="flex gap-2 flex-wrap">
             @foreach ($this->selectedUsers as $id => $name)
@@ -82,16 +82,14 @@ new class extends Component {
         </div>
 
         <flux:input size="sm" type="search" placeholder="{{ __('Search users') }}"
-                    wire:model.live.debounce.300ms="userSearch"/>
+                    wire:model.live.debounce.300ms="keyword"/>
     </div>
 
     <div class="overflow-y-auto space-y-1">
         @foreach ($this->users as $user)
             <flux:button size="sm"
-                         variant="primary"
                          class="w-full gap-2 justify-start"
-                         wire:click="selectUser({{ $user->id }}, {{$user->name}})">
-                <flux:avatar size="xs" name="{{ $user->name }}"/>
+                         wire:click="selectUser({{ $user->id }}, '{{$user->name}}')">
                 <span class="truncate">{{ $user->name }}</span>
             </flux:button>
         @endforeach
