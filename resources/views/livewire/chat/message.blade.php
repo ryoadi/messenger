@@ -35,6 +35,8 @@ new class extends Component {
     {
         $delete($this->message);
 
+        // Notify parent components (e.g., room) to remove this message from their lists
+        $this->dispatch('chat:message-deleted', id: (int) $this->message->getKey());
     }
 
 }; ?>

@@ -4,6 +4,7 @@ use App\Actions\Chat\CreateMessage;
 use App\Models\ChatRoom;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -36,6 +37,14 @@ new class extends Component {
 
         // Clear input
         $this->text = '';
+    }
+
+    #[On('chat:message-deleted')]
+    public function onMessageDeleted(int $id): void
+    {
+        $this->messages = $this->messages
+            ->reject(fn($message) => (int) $message->getKey() === $id)
+            ->values();
     }
 
 }; ?>
