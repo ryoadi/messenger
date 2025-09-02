@@ -71,6 +71,7 @@ new class extends Component {
         <flux:input size="sm" placeholder="{{ __('Room name') }}"
                     :disabled="count($selectedUsers) <= 1"
                     wire:model.live="name"/>
+        <flux:error name="name" />
 
         <div class="flex gap-2 flex-wrap">
             @foreach ($this->selectedUsers as $id => $name)
