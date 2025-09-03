@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Chat\CreateMessage;
+use App\Models\ChatMessage;
 use App\Models\ChatRoom;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Locked;
@@ -29,7 +30,7 @@ new class extends Component {
         $this->room->loadMissing('users');
         $this->messages = $this->room->messages->keyBy('id');
         $this->title    = (string) $this->room->title; // model accessor
-        $this->roomId = $this->room->id;
+        $this->roomId   = $this->room->id;
     }
 
     public function addMessage(CreateMessage $create): void
@@ -41,6 +42,14 @@ new class extends Component {
 
         // Clear input
         $this->text = '';
+
+        $this->js("channel.whisper('MessageAdded', [$message->id])");
+    }
+
+    public function appendMessage(int $id): void
+    {
+        $message = ChatMessage::find($id);
+        $this->messages->unshift($message)->keyBy('id');
     }
 
 }; ?>
@@ -48,6 +57,7 @@ new class extends Component {
 <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8"
      x-data="{channel: null}"
      x-init="channel = Echo.private(`chat.${$wire.roomId}`)
+        .listenForWhisper('MessageAdded', ([id]) => $wire.appendMessage(id))
         .listenForWhisper('MessageUpdated', () => $wire.$refresh())
         .listenForWhisper('MessageDeleted', () => $wire.$refresh())"
 >
