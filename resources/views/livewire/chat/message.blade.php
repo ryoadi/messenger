@@ -29,6 +29,7 @@ new class extends Component {
     public function edit(UpdateMessage $update): void
     {
         $this->message = $update($this->message, $this->editedMessage);
+        $this->dispatch('updated');
     }
 
     public function delete(DeleteMessage $delete): void

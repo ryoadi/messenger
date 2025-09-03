@@ -47,7 +47,10 @@ new class extends Component {
 
 <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8"
      x-data="{channel: null}"
-     x-init="channel = Echo.private(`chat.${$wire.roomId}`).listenForWhisper('MessageDeleted', () => $wire.$refresh())">
+     x-init="channel = Echo.private(`chat.${$wire.roomId}`)
+        .listenForWhisper('MessageUpdated', () => $wire.$refresh())
+        .listenForWhisper('MessageDeleted', () => $wire.$refresh())"
+>
     <header class="flex gap-2 mt-15 lg:mt-3 items-center">
         <flux:modal.trigger name="profile-info">
             <flux:avatar circle badge badge:circle badge:color="green" :name="$title" href="#"/>
@@ -95,7 +98,8 @@ new class extends Component {
         @foreach($messages as $message)
             <livewire:chat.message
                 :message="$message"
-                :key="$message->id"
+                :key="$message->id.':'.$message->updated_at"
+                @updated="$refresh();channel.whisper('MessageUpdated')"
                 @deleted="$refresh();channel.whisper('MessageDeleted')"
             />
         @endforeach
