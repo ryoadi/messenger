@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use App\Actions\Chat\DeleteMessage;
+use App\Events\MessageDeleted;
 use App\Models\{ChatMessage, ChatRoom, User};
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
 it('deletes when authorized', function () {
+    Event::fake();
+
     $user = User::factory()->create();
     actingAs($user);
 
@@ -20,6 +24,11 @@ it('deletes when authorized', function () {
     app(DeleteMessage::class)($message);
 
     expect(ChatMessage::query()->whereKey($message->getKey())->exists())->toBeFalse();
+    Event::assertDispatched(
+        MessageDeleted::class,
+        fn(MessageDeleted $event) => $event->roomId === (int) $room->getKey() &&
+                                     $event->id === (int) $message->getKey()
+    );
 });
 
 it('forbids non-owner', function () {

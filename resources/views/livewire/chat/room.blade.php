@@ -13,6 +13,9 @@ new class extends Component {
     public ChatRoom $room;
 
     #[Locked]
+    public int $roomId;
+
+    #[Locked]
     public Collection $messages;
 
     #[Locked]
@@ -24,8 +27,9 @@ new class extends Component {
     {
         // Ensure related users are available for header rendering
         $this->room->loadMissing('users');
-        $this->messages = $this->room->messages;
+        $this->messages = $this->room->messages->keyBy('id');
         $this->title    = (string) $this->room->title; // model accessor
+        $this->roomId = $this->room->id;
     }
 
     public function addMessage(CreateMessage $create): void
@@ -33,18 +37,18 @@ new class extends Component {
         $message = $create($this->room, $this->text);
 
         // Keep in-memory list in sync for instant UI feedback
-        $this->messages->unshift($message);
+        $this->messages->unshift($message)->keyBy('id');
 
         // Clear input
         $this->text = '';
     }
 
-    #[On('chat:message-deleted')]
-    public function onMessageDeleted(int $id): void
+    #[On('echo-private:chat.room.{roomId},MessageDeleted')]
+    public function onMessageDeleted(array $payload): void
     {
-        $this->messages = $this->messages
-            ->reject(fn($message) => (int) $message->getKey() === $id)
-            ->values();
+        // Do nothing.
+        // The message (somehow?) removed automatically
+        // just by listening the event.
     }
 
 }; ?>
@@ -95,7 +99,7 @@ new class extends Component {
         </form>
 
         @foreach($messages as $message)
-            <livewire:chat.message :message="$message" :key="$message->getKey()"/>
+            <livewire:chat.message :message="$message" :key="$message->id"/>
         @endforeach
 
         <flux:separator variant="subtle" text="{{ __('Start conversation') }}"/>
