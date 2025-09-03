@@ -14,11 +14,6 @@ final class DeleteMessage
     {
         Gate::authorize('manage', $message);
 
-        $messageId = (int) $message->getKey();
-        $roomId = (int) $message->getAttribute('chat_room_id');
-
         $message->delete();
-
-        MessageDeleted::broadcast($roomId, $messageId);
     }
 }

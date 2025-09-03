@@ -43,17 +43,11 @@ new class extends Component {
         $this->text = '';
     }
 
-    #[On('echo-private:chat.room.{roomId},MessageDeleted')]
-    public function onMessageDeleted(array $payload): void
-    {
-        // Do nothing.
-        // The message (somehow?) removed automatically
-        // just by listening the event.
-    }
-
 }; ?>
 
-<div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8">
+<div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8"
+     x-data="{channel: null}"
+     x-init="channel = Echo.private(`chat.${$wire.roomId}`).listenForWhisper('MessageDeleted', () => $wire.$refresh())">
     <header class="flex gap-2 mt-15 lg:mt-3 items-center">
         <flux:modal.trigger name="profile-info">
             <flux:avatar circle badge badge:circle badge:color="green" :name="$title" href="#"/>
@@ -99,7 +93,11 @@ new class extends Component {
         </form>
 
         @foreach($messages as $message)
-            <livewire:chat.message :message="$message" :key="$message->id"/>
+            <livewire:chat.message
+                :message="$message"
+                :key="$message->id"
+                @deleted="$refresh();channel.whisper('MessageDeleted')"
+            />
         @endforeach
 
         <flux:separator variant="subtle" text="{{ __('Start conversation') }}"/>

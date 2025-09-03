@@ -24,11 +24,6 @@ it('deletes when authorized', function () {
     app(DeleteMessage::class)($message);
 
     expect(ChatMessage::query()->whereKey($message->getKey())->exists())->toBeFalse();
-    Event::assertDispatched(
-        MessageDeleted::class,
-        fn(MessageDeleted $event) => $event->roomId === (int) $room->getKey() &&
-                                     $event->id === (int) $message->getKey()
-    );
 });
 
 it('forbids non-owner', function () {

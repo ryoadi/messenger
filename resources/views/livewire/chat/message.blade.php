@@ -34,6 +34,7 @@ new class extends Component {
     public function delete(DeleteMessage $delete): void
     {
         $delete($this->message);
+        $this->dispatch('deleted');
     }
 
 }; ?>
@@ -91,7 +92,7 @@ new class extends Component {
         <flux:menu>
             @if ($isOwned)
                 <flux:menu.item icon="pencil" x-on:click="editing=true">{{ __('Edit') }}</flux:menu.item>
-                <flux:modal.trigger name="delete-message">
+                <flux:modal.trigger :name="'delete-message-'.$message->id">
                     <flux:menu.item variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
                 </flux:modal.trigger>
             @else
@@ -103,7 +104,7 @@ new class extends Component {
     </flux:dropdown>
 
     @if ($isOwned)
-        <flux:modal name="delete-message">
+        <flux:modal :name="'delete-message-'.$message->id">
             <flux:heading class="mb-2">{{ __('Delete message') }}</flux:heading>
             <flux:text class="mb-4">{{ __('Are you sure you want to delete this message?') }}</flux:text>
             <div class="flex gap-2 justify-end">
