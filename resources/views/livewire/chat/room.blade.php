@@ -24,6 +24,8 @@ new class extends Component {
 
     public string $text = '';
 
+    public array $typing = [];
+
     public function mount(): void
     {
         // Ensure related users are available for header rendering
@@ -43,23 +45,40 @@ new class extends Component {
         // Clear input
         $this->text = '';
 
-        $this->js("channel.whisper('MessageAdded', [$message->id])");
+        $this->js("channel.whisper('MessageAdded', {id: $message->id})");
     }
 
-    public function appendMessage(int $id): void
+    #[On('echo-private:chat.{roomId},.client-MessageAdded')]
+    public function appendMessage(array $payload): void
     {
-        $message = ChatMessage::find($id);
+        $message = ChatMessage::find($payload['id']);
         $this->messages->unshift($message)->keyBy('id');
+    }
+
+    #[On('echo-private:chat.{roomId},.client-MessageUpdated')]
+    #[On('echo-private:chat.{roomId},.client-MessageDeleted')]
+    public function refresh(): void
+    {
+        // The messages updated automatically on refresh.
+    }
+
+    #[On('echo-private:chat.{roomId},.client-Typing')]
+    public function addTyping(array $payload): void
+    {
+        $this->typing[$payload['id']] = $payload['name'];
+    }
+
+    #[On('echo-private:chat.{roomId},.client-Typed')]
+    public function removeTyping(array $payload): void
+    {
+        unset($this->typing[$payload['id']]);
     }
 
 }; ?>
 
 <div class="flex flex-col gap-3 h-dvh -mt-20 lg:-my-8"
      x-data="{channel: null}"
-     x-init="channel = Echo.private(`chat.${$wire.roomId}`)
-        .listenForWhisper('MessageAdded', ([id]) => $wire.appendMessage(id))
-        .listenForWhisper('MessageUpdated', () => $wire.$refresh())
-        .listenForWhisper('MessageDeleted', () => $wire.$refresh())"
+     x-init="channel = Echo.private(`chat.${$wire.roomId}`)"
 >
     <header class="flex gap-2 mt-15 lg:mt-3 items-center">
         <flux:modal.trigger name="profile-info">
@@ -87,18 +106,28 @@ new class extends Component {
             <flux:button variant="ghost" size="xs" icon="chevron-down" class="w-full"
                          @click="$refs.container.scrollTo(0, $refs.container.scrollHeight)"/>
 
-            <flux:avatar.group>
-                <flux:avatar size="xs" circle name="username" tooltip="username"/>
-                <flux:avatar size="xs" circle name="username" tooltip="username"/>
-                <flux:avatar size="xs" circle name="username" tooltip="username"/>
-                <flux:avatar size="xs" circle name="+3"/>
-                <flux:text variant="subtle" class="pl-4">typing...</flux:avatar.group>
-            </flux:avatar.group>
+            @if(!empty($typing))
+                <flux:avatar.group>
+                    @foreach($typing as $name)
+                        <flux:avatar size="xs" circle :name="$name" :tooltip="$name"/>
+                    @endforeach
+
+                    @if(count($typing) > 3)
+                        <flux:avatar size="xs" circle :name="'+'.count($typing) -3"/>
+                    @endif
+
+                    <flux:text variant="subtle" class="pl-4">typing...</flux:avatar.group>
+                </flux:avatar.group>
+            @endif
 
             <input type="file" x-ref="file" class="hidden"/>
 
             <flux:input.group>
-                <flux:input placeholder="{{ __('Say something...') }}" wire:model="text"/>
+                <flux:input placeholder="{{ __('Say something...') }}"
+                            wire:model="text"
+                            @focus="channel.whisper('Typing', {id: {{auth()->id()}}, name: '{{auth()->user()->name}}'})"
+                            @blur="channel.whisper('Typed', {id: {{auth()->id()}}})"
+                />
 
                 <flux:button icon="plus" @click="$refs.file.click()"/>
                 <flux:button type="submit" icon="paper-airplane"/>
