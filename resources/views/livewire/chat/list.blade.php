@@ -53,6 +53,7 @@ new class extends Component {
         <flux:navlist>
             @foreach ($this->rooms as $room)
                 <flux:navlist.item wire:key="room-{{ $room->id }}"
+                                   wire:navigate
                                     :href="route('chat.show', ['ChatRoom' => $room])"
                                    class="[&>[data-content]]:flex [&>[data-content]]:flex-column [&>[data-content]]:items-center [&>[data-content]]:gap-2">
                     <flux:avatar size="xs" name="{{ $room->title }}"/>
