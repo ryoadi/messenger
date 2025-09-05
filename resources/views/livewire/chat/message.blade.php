@@ -73,7 +73,7 @@ new class extends Component {
                     <form class="space-y-2 min-w-100" x-bind:style="width ? `width: ${width}` : ''"
                           wire:submit.prevent="edit"
                     >
-                        <flux:textarea wire:model="editedMessage" rows="1" class="w-full"/>
+                        <x-text-editor wire:model="editedMessage" />
                         <div class="flex gap-2 justify-end">
                             <flux:button size="sm" variant="subtle" type="button"
                                          x-on:click="editing=false;">{{ __('Cancel') }}</flux:button>
@@ -83,7 +83,7 @@ new class extends Component {
                     </form>
                 </div>
             @endif
-            <p x-show="!editing" x-ref="content" class="whitespace-pre-line">{{ $message->content }}</p>
+            <div x-show="!editing" x-ref="content">{{ $message->content }}</div>
         </flux:text>
     </div>
 
