@@ -20,6 +20,9 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
+        "@tiptap/core": "^3.4.1",
+        "@tiptap/pm": "^3.4.1",
+        "@tiptap/starter-kit": "^3.4.1",
         "laravel-echo": "^2.2.0",
         "pusher-js": "^8.4.0"
     }
