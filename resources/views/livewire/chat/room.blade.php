@@ -124,18 +124,18 @@ new class extends Component {
                 </flux:avatar.group>
             @endif
 
-            <input type="file" x-ref="file" class="hidden"/>
-
-            <flux:input.group>
-                <flux:input placeholder="{{ __('Say something...') }}"
-                            wire:model="text"
-                            @focus="channel.whisper('Typing', {id: {{auth()->id()}}, name: '{{auth()->user()->name}}'})"
-                            @blur="channel.whisper('Typed', {id: {{auth()->id()}}})"
+            <div class="relative">
+                <x-text-editor
+                    class="bg-zinc-700 pl-4 pr-8 py-2 rounded-lg"
+                    wire:model="text"
+                    @focus="channel.whisper('Typing', {id: {{auth()->id()}}, name: '{{auth()->user()->name}}'})"
+                    @blur="channel.whisper('Typed', {id: {{auth()->id()}}})"
                 />
 
-                <flux:button icon="plus" @click="$refs.file.click()"/>
-                <flux:button type="submit" icon="paper-airplane"/>
-            </flux:input.group>
+                <div class="absolute bottom-0 right-0">
+                    <flux:button variant="ghost" icon="paper-airplane" size="sm" type="submit"></flux:button>
+                </div>
+            </div>
         </form>
 
         @foreach($messages as $message)
