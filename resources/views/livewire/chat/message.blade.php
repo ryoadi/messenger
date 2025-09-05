@@ -13,7 +13,7 @@ new class extends Component {
     public bool $isOwned = false;
 
     #[Locked]
-    public bool $group = false;
+    public bool $isGroupRoom = false;
 
     #[Locked]
     public ChatMessage $message;
@@ -22,7 +22,7 @@ new class extends Component {
 
     public function mount(): void
     {
-        $this->isOwned = Gate::allows('manage', $this->message);
+        $this->isOwned       = Gate::allows('manage', $this->message);
         $this->editedMessage = $this->message->content;
     }
 
@@ -44,7 +44,7 @@ new class extends Component {
      x-init="$nextTick(() => { width = $refs.content ? ($refs.content.offsetWidth + 'px') : null })"
      class="flex gap-2 [&_[data-open]]:block hover:[&_[data-flux-dropdown]]:block {{ $isOwned ? 'flex-row-reverse' : '' }}"
 >
-    @if($group)
+    @if($isGroupRoom && !$isOwned)
         <flux:avatar circle badge badge:circle badge:color="green" :name="$message->user?->name ?? 'User'" size="sm"/>
     @endif
 

@@ -3,6 +3,7 @@
 use App\Actions\Chat\CreateMessage;
 use App\Models\ChatMessage;
 use App\Models\ChatRoom;
+use App\Models\Enums\ChatRoomType;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -15,6 +16,9 @@ new class extends Component {
 
     #[Locked]
     public int $roomId;
+
+    #[Locked]
+    public bool $isGroupRoom = false;
 
     #[Locked]
     public Collection $messages;
@@ -30,9 +34,10 @@ new class extends Component {
     {
         // Ensure related users are available for header rendering
         $this->room->loadMissing('users');
-        $this->messages = $this->room->messages->keyBy('id');
-        $this->title    = (string) $this->room->title; // model accessor
-        $this->roomId   = $this->room->id;
+        $this->messages    = $this->room->messages->keyBy('id');
+        $this->title       = (string) $this->room->title; // model accessor
+        $this->roomId      = $this->room->id;
+        $this->isGroupRoom = $this->room->type === ChatRoomType::Group;
     }
 
     public function addMessage(CreateMessage $create): void
@@ -90,12 +95,11 @@ new class extends Component {
         </flux:modal.trigger>
 
         <flux:modal name="profile-info" variant="flyout" position="right">
-            <div class="flex flex-col gap-4 items-center">
-                <flux:avatar circle :name="$title" size="xl"/>
-                <flux:heading size="xl">{{ $title }}</flux:heading>
-                <flux:text>Introduction text</flux:text>
-                <flux:text>Last seen: 10 minutes ago</flux:text>
-            </div>
+            @if($isGroupRoom)
+                <livewire:chat.profile.group :room="$room"/>
+            @else
+                <livewire:chat.profile.personal :room="$room"/>
+            @endif
         </flux:modal>
     </header>
 
@@ -138,6 +142,7 @@ new class extends Component {
             <livewire:chat.message
                 :message="$message"
                 :key="$message->id.':'.$message->updated_at"
+                :isGroupRoom="$isGroupRoom"
                 @updated="$refresh();channel.whisper('MessageUpdated')"
                 @deleted="$refresh();channel.whisper('MessageDeleted')"
             />
