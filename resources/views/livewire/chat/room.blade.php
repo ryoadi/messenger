@@ -22,7 +22,7 @@ new class extends Component {
     public bool $isGroupRoom = false;
 
     #[Locked]
-    public Collection $messages;
+    public Collection $chatMessages;
 
     #[Locked]
     public string $title = '';
@@ -35,7 +35,7 @@ new class extends Component {
     {
         // Ensure related users are available for header rendering
         $this->room->loadMissing('users');
-        $this->messages    = $this->room->messages->keyBy('id');
+        $this->chatMessages    = $this->room->messages->keyBy('id');
         $this->title       = (string) $this->room->title; // model accessor
         $this->roomId      = $this->room->id;
         $this->isGroupRoom = $this->room->type === ChatRoomType::Group;
@@ -50,7 +50,7 @@ new class extends Component {
         $message = $create($this->room, $this->text);
 
         // Keep in-memory list in sync for instant UI feedback
-        $this->messages->unshift($message)->keyBy('id');
+        $this->chatMessages->unshift($message)->keyBy('id');
 
         // Clear input
         $this->text = '';
@@ -62,14 +62,14 @@ new class extends Component {
     public function appendMessage(array $payload): void
     {
         $message = ChatMessage::find($payload['id']);
-        $this->messages->unshift($message)->keyBy('id');
+        $this->chatMessages->unshift($message)->keyBy('id');
     }
 
     #[On('echo-private:chat.{roomId},.client-MessageUpdated')]
     #[On('echo-private:chat.{roomId},.client-MessageDeleted')]
     public function refresh(): void
     {
-        // The messages updated automatically on refresh.
+        // The chatMessages updated automatically on refresh.
     }
 
     #[On('echo-private:chat.{roomId},.client-Typing')]
@@ -143,7 +143,7 @@ new class extends Component {
             </div>
         </form>
 
-        @foreach($messages as $message)
+        @foreach($chatMessages as $message)
             <livewire:chat.message
                 :message="$message"
                 :key="$message->id.':'.$message->updated_at"

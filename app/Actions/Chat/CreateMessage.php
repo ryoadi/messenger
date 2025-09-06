@@ -12,15 +12,9 @@ use Illuminate\Support\Str;
 
 final class CreateMessage
 {
-    public function __invoke(ChatRoom $room, string $rawContent): ChatMessage
+    public function __invoke(ChatRoom $room, string $content): ChatMessage
     {
         Gate::authorize('addMessage', $room);
-
-        $content = Str::trim($rawContent);
-        validator(
-            ['content' => $content],
-            ['content' => ['required', 'string']]
-        )->validate();
 
         $newMessage = ChatMessage::create([
             'chat_room_id' => $room->getKey(),

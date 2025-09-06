@@ -10,19 +10,9 @@ use Illuminate\Support\Str;
 
 final class UpdateMessage
 {
-    public function __invoke(ChatMessage $message, string $rawContent): ChatMessage
+    public function __invoke(ChatMessage $message, string $newContent): ChatMessage
     {
         Gate::authorize('manage', $message);
-
-        $newContent = Str::trim($rawContent);
-        if ($newContent === $message->content) {
-            return $message;
-        }
-
-        validator(
-            ['content' => $newContent],
-            ['content' => ['required', 'string']]
-        )->validate();
 
         $message->update(['content' => $newContent]);
         return $message->refresh();
