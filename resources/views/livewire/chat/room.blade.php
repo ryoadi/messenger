@@ -1,13 +1,14 @@
 <?php
 
-use App\Actions\Chat\CreateMessage;
-use App\Models\ChatMessage;
 use App\Models\ChatRoom;
-use App\Models\Enums\ChatRoomType;
-use Illuminate\Support\Collection;
-use Livewire\Attributes\Locked;
+use App\Rules\HtmlFilled;
+use App\Models\ChatMessage;
 use Livewire\Attributes\On;
 use Livewire\Volt\Component;
+use Livewire\Attributes\Locked;
+use App\Models\Enums\ChatRoomType;
+use Illuminate\Support\Collection;
+use App\Actions\Chat\CreateMessage;
 
 new class extends Component {
 
@@ -40,8 +41,12 @@ new class extends Component {
         $this->isGroupRoom = $this->room->type === ChatRoomType::Group;
     }
 
-    public function addMessage(CreateMessage $create): void
+    public function addMessage(CreateMessage $create, HtmlFilled $filledRule): void
     {
+        $this->validate([
+            'text' => ['required', $filledRule],
+        ]);
+
         $message = $create($this->room, $this->text);
 
         // Keep in-memory list in sync for instant UI feedback

@@ -1,11 +1,12 @@
 <?php
 
+use App\Rules\HtmlFilled;
+use App\Models\ChatMessage;
+use Livewire\Volt\Component;
+use Livewire\Attributes\Locked;
 use App\Actions\Chat\DeleteMessage;
 use App\Actions\Chat\UpdateMessage;
-use App\Models\ChatMessage;
 use Illuminate\Support\Facades\Gate;
-use Livewire\Attributes\Locked;
-use Livewire\Volt\Component;
 
 new class extends Component {
 
@@ -26,8 +27,12 @@ new class extends Component {
         $this->editedMessage = $this->message->content;
     }
 
-    public function edit(UpdateMessage $update): void
+    public function edit(UpdateMessage $update, HtmlFilled $filledRule): void
     {
+        $this->validate([
+            'editedMessage' => ['required', $filledRule],
+        ]);
+
         $this->message = $update($this->message, $this->editedMessage);
         $this->dispatch('updated');
     }
