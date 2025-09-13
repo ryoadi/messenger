@@ -38,3 +38,28 @@ it('forbids adding a message when the user does not belong to the chat room', fu
 
     expect(Gate::forUser($user)->denies('addMessage', $room))->toBeTrue();
 });
+
+it('allows managing when the user is the owner of the chat room', function (): void {
+    $user = User::factory()->create();
+    $room = ChatRoom::factory()->create();
+
+    $room->users()->attach($user->getKey(), ['role' => ChatRoomUserRole::Owner->value]);
+
+    expect(Gate::forUser($user)->allows('manage', $room))->toBeTrue();
+});
+
+it('forbids managing when the user is only a member of the chat room', function (): void {
+    $user = User::factory()->create();
+    $room = ChatRoom::factory()->create();
+
+    $room->users()->attach($user->getKey(), ['role' => ChatRoomUserRole::Member->value]);
+
+    expect(Gate::forUser($user)->denies('manage', $room))->toBeTrue();
+});
+
+it('forbids managing when the user is not linked to the chat room', function (): void {
+    $user = User::factory()->create();
+    $room = ChatRoom::factory()->create();
+
+    expect(Gate::forUser($user)->denies('manage', $room))->toBeTrue();
+});
