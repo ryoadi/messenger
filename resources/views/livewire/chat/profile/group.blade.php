@@ -38,7 +38,7 @@ new class extends Component {
             </div>
         @endif
 
-        @if(!empty($this->users['owner']))
+        @if(!empty($this->users['member']))
             <div class="space-y-2">
                 <flux:heading size="sm">{{ __('Members') }}</flux:heading>
                 <div class="flex flex-col">
