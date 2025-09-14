@@ -8,6 +8,7 @@ use Livewire\Volt\Component;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use App\Actions\Chat\GroupRoom\EditRoom;
+use App\Actions\Chat\GroupRoom\RemoveMembers;
 
 new class extends Component {
     #[Locked]
@@ -46,6 +47,20 @@ new class extends Component {
 
         // ask the browser to close the edit UI (handled in Alpine)
         $this->editing = false;
+    }
+
+    public function removeMembers(RemoveMembers $remove, int ...$userIds): void
+    {
+        $this->authorize('manage', $this->room);
+
+        if (empty($userIds)) {
+            return;
+        }
+
+        $updated = $remove($this->room, ...$userIds);
+
+        // keep UI in sync
+        $this->room = $updated;
     }
 }; ?>
 
@@ -117,6 +132,33 @@ new class extends Component {
                                 <flux:avatar size="xs" circle :name="$user->name" />
                                 <flux:text class="truncate">{{ $user->name }}</flux:text>
                             </div>
+
+                            @can('manage', $room)
+                                <div class="opacity-0 group-hover:opacity-100 transition">
+                                    <flux:button variant="ghost" size="sm" type="button" x-on:click="$refs.modal_{{ $user->id }}.show()" aria-label="Remove member">
+                                        <flux:icon name="trash" />
+                                    </flux:button>
+                                </div>
+
+                                {{-- client-driven modal: open/close stays on client, remove triggers server --}}
+                                <flux:modal x-ref="modal_{{ $user->id }}" class="z-50" style="display:none;">
+                                    <flux:heading size="sm">{{ __('Remove member') }}</flux:heading>
+
+                                    <p class="mt-2">
+                                        {{ __('Are you sure you want to remove :name from this room?', ['name' => $user->name]) }}
+                                    </p>
+
+                                    <div class="mt-4 flex gap-2">
+                                        <flux:button variant="danger" wire:click="removeMembers({{ $user->id }})" wire:loading.attr="disabled" x-on:click="$refs.modal_{{ $user->id }}.hide()">
+                                            {{ __('Remove') }}
+                                        </flux:button>
+
+                                        <flux:button type="button" x-on:click="$refs.modal_{{ $user->id }}.hide()">
+                                            {{ __('Cancel') }}
+                                        </flux:button>
+                                    </div>
+                                </flux:modal>
+                            @endcan
                         </div>
                     @endforeach
                 </div>
