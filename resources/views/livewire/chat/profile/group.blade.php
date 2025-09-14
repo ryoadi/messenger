@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use App\Actions\Chat\GroupRoom\EditRoom;
 use App\Actions\Chat\GroupRoom\RemoveMembers;
+use App\Actions\Chat\GroupRoom\GetUserCandidates;
+use App\Actions\Chat\GroupRoom\AddMembers;
 
 new class extends Component {
     #[Locked]
@@ -19,6 +21,11 @@ new class extends Component {
 
     public bool $editing = false;
 
+    // Add members UI state
+    public array $selectedCandidates = [];
+    public bool $showAddMembersModal = false;
+    public string $candidateSearch = '';
+
     public function mount(): void
     {
         $this->title = (string) $this->room->title;
@@ -27,6 +34,34 @@ new class extends Component {
     public function getUsersProperty()
     {
         return $this->room->users->groupBy(fn($u) => $u->pivot->role);
+    }
+
+    /**
+     * Candidates that can be added to this room.
+     */
+    public function getUserCandidatesProperty()
+    {
+        return app(GetUserCandidates::class)($this->room, $this->candidateSearch);
+    }
+
+    public function submitAddMembers(AddMembers $add): void
+    {
+        $this->authorize('manage', $this->room);
+
+        $validated = $this->validate([
+            'selectedCandidates' => ['required', 'array', 'min:1'],
+            'selectedCandidates.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $updated = $add($this->room, ...$validated['selectedCandidates']);
+
+        // keep UI in sync
+        $this->room = $updated;
+
+        // reset modal state
+        $this->selectedCandidates = [];
+        $this->candidateSearch = '';
+        $this->showAddMembersModal = false;
     }
 
     public function updateTitle(EditRoom $edit): void
@@ -124,24 +159,25 @@ new class extends Component {
 
         @if(!empty($this->users['member']))
             <div class="space-y-2">
-                <flux:heading size="sm">{{ __('Members') }}</flux:heading>
+                <flux:heading size="sm">
+                    {{ __('Members') }}
+                </flux:heading>
+                @can('manage', $room)
+                    <flux:modal.trigger name="add-members">
+                        <flux:button size="sm" class="w-full">{{ __('Add members') }}</flux:button>
+                    </flux:modal.trigger>
+                @endcan
+                
                 <div class="flex flex-col">
                     @foreach($this->users['member'] as $user)
-                        <div class="flex items-center justify-between py-2" wire:key="member-{{ $user->id }}">
+                        <div class="group flex items-center justify-between py-2" wire:key="member-{{ $user->id }}">
                             <div class="flex items-center gap-3 min-w-0">
                                 <flux:avatar size="xs" circle :name="$user->name" />
                                 <flux:text class="truncate">{{ $user->name }}</flux:text>
                             </div>
 
                             @can('manage', $room)
-                                <div class="opacity-0 group-hover:opacity-100 transition">
-                                    <flux:button variant="ghost" size="sm" type="button" x-on:click="$refs.modal_{{ $user->id }}.show()" aria-label="Remove member">
-                                        <flux:icon name="trash" />
-                                    </flux:button>
-                                </div>
-
-                                {{-- client-driven modal: open/close stays on client, remove triggers server --}}
-                                <flux:modal x-ref="modal_{{ $user->id }}" class="z-50" style="display:none;">
+                                <flux:modal name="delete-modal-{{ $user->id }}">
                                     <flux:heading size="sm">{{ __('Remove member') }}</flux:heading>
 
                                     <p class="mt-2">
@@ -153,11 +189,24 @@ new class extends Component {
                                             {{ __('Remove') }}
                                         </flux:button>
 
-                                        <flux:button type="button" x-on:click="$refs.modal_{{ $user->id }}.hide()">
-                                            {{ __('Cancel') }}
-                                        </flux:button>
+                                        <flux:modal.close>
+                                            <flux:button type="button">
+                                                {{ __('Cancel') }}
+                                            </flux:button>
+                                        </flux:modal.close>
                                     </div>
                                 </flux:modal>
+
+                                <flux:modal.trigger name="delete-modal-{{ $user->id }}">
+                                    <flux:button 
+                                        variant="danger" 
+                                        size="sm" 
+                                        type="button" 
+                                        icon="trash" 
+                                        class="opacity-0 group-hover:opacity-100 transition" 
+                                        aria-label="Remove member">
+                                    </flux:button>
+                                </flux:modal.trigger>
                             @endcan
                         </div>
                     @endforeach
@@ -165,4 +214,40 @@ new class extends Component {
             </div>
         @endif
     </div>
+    
+    {{-- Add Members modal (client-driven) --}}
+    <flux:modal name="add-members" variant="flyout" position="right">
+        <flux:heading size="sm">{{ __('Add members') }}</flux:heading>
+
+        <div class="mt-2">
+            <flux:input placeholder="{{ __('Search users...') }}" wire:model="candidateSearch" />
+        </div>
+
+        <div class="mt-4 max-h-64 overflow-auto">
+            @forelse($this->userCandidates as $candidate)
+                <label class="flex items-center gap-3 py-2" wire:key="candidate-{{ $candidate->id }}">
+                    <input type="checkbox" wire:model="selectedCandidates" value="{{ $candidate->id }}" />
+                    <flux:avatar size="xs" circle :name="$candidate->name" />
+                    <flux:text class="truncate">{{ $candidate->name }}</flux:text>
+                </label>
+            @empty
+                <p class="text-sm text-muted">{{ __('No users found') }}</p>
+            @endforelse
+            @error('selectedCandidates')
+                <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="mt-4 flex gap-2">
+            <flux:button variant="primary" wire:click="submitAddMembers" wire:loading.attr="disabled">
+                {{ __('Add') }}
+            </flux:button>
+
+            <flux:modal.close>
+                <flux:button type="button">
+                    {{ __('Cancel') }}
+                </flux:button>
+            </flux:modal.close>
+        </div>
+    </flux:modal>
 </div>
