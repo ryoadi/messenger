@@ -21,11 +21,6 @@ new class extends Component {
 
     public bool $editing = false;
 
-    // Add members UI state
-    public array $selectedCandidates = [];
-    public bool $showAddMembersModal = false;
-    public string $candidateSearch = '';
-
     public function mount(): void
     {
         $this->title = (string) $this->room->title;
@@ -34,34 +29,6 @@ new class extends Component {
     public function getUsersProperty()
     {
         return $this->room->users->groupBy(fn($u) => $u->pivot->role);
-    }
-
-    /**
-     * Candidates that can be added to this room.
-     */
-    public function getUserCandidatesProperty()
-    {
-        return app(GetUserCandidates::class)($this->room, $this->candidateSearch);
-    }
-
-    public function submitAddMembers(AddMembers $add): void
-    {
-        $this->authorize('manage', $this->room);
-
-        $validated = $this->validate([
-            'selectedCandidates' => ['required', 'array', 'min:1'],
-            'selectedCandidates.*' => ['integer', 'exists:users,id'],
-        ]);
-
-        $updated = $add($this->room, ...$validated['selectedCandidates']);
-
-        // keep UI in sync
-        $this->room = $updated;
-
-        // reset modal state
-        $this->selectedCandidates = [];
-        $this->candidateSearch = '';
-        $this->showAddMembersModal = false;
     }
 
     public function updateTitle(EditRoom $edit): void
@@ -168,9 +135,9 @@ new class extends Component {
                     </flux:modal.trigger>
                 @endcan
                 
-                <div class="flex flex-col">
+                <div class="flex flex-col gap-2 pt-2">
                     @foreach($this->users['member'] as $user)
-                        <div class="group flex items-center justify-between py-2" wire:key="member-{{ $user->id }}">
+                        <div class="group flex items-center justify-between" wire:key="member-{{ $user->id }}">
                             <div class="flex items-center gap-3 min-w-0">
                                 <flux:avatar size="xs" circle :name="$user->name" />
                                 <flux:text class="truncate">{{ $user->name }}</flux:text>
@@ -217,37 +184,6 @@ new class extends Component {
     
     {{-- Add Members modal (client-driven) --}}
     <flux:modal name="add-members" variant="flyout" position="right">
-        <flux:heading size="sm">{{ __('Add members') }}</flux:heading>
-
-        <div class="mt-2">
-            <flux:input placeholder="{{ __('Search users...') }}" wire:model="candidateSearch" />
-        </div>
-
-        <div class="mt-4 max-h-64 overflow-auto">
-            @forelse($this->userCandidates as $candidate)
-                <label class="flex items-center gap-3 py-2" wire:key="candidate-{{ $candidate->id }}">
-                    <input type="checkbox" wire:model="selectedCandidates" value="{{ $candidate->id }}" />
-                    <flux:avatar size="xs" circle :name="$candidate->name" />
-                    <flux:text class="truncate">{{ $candidate->name }}</flux:text>
-                </label>
-            @empty
-                <p class="text-sm text-muted">{{ __('No users found') }}</p>
-            @endforelse
-            @error('selectedCandidates')
-                <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="mt-4 flex gap-2">
-            <flux:button variant="primary" wire:click="submitAddMembers" wire:loading.attr="disabled">
-                {{ __('Add') }}
-            </flux:button>
-
-            <flux:modal.close>
-                <flux:button type="button">
-                    {{ __('Cancel') }}
-                </flux:button>
-            </flux:modal.close>
-        </div>
+        <livewire:chat.profile.add-members :room="$room">
     </flux:modal>
 </div>
