@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('chat_room_id')->constrained('chat_rooms')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('role', ['owner', 'member']);
+            $table->enum('role', ['owner', 'member'])->default('member');
             $table->timestamps();
 
             $table->unique(['chat_room_id', 'user_id']);
